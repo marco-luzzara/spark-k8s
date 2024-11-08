@@ -1,0 +1,76 @@
+x-spark-image: &spark-image
+  image: spark:3.5.3-java17
+
+services:
+  minio:
+    image: quay.io/minio/minio:latest
+    ports:
+    #   - '9000:9000'
+      - '${MINIO_UI_PORT}:9001'
+    # volumes:
+    #   - './minio/data:/data'
+    environment:
+      - MINIO_ROOT_USER
+      - MINIO_ROOT_PASSWORD
+    healthcheck:
+      test: curl --fail http://localhost:9000/minio/health/live
+      start_period: 1m
+      retries: 10
+      timeout: 5s
+      interval: 5s
+    command: ["server", "/data", "--console-address", ":9001"]
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        mc alias set local_minio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}
+        mc mb local_minio/datasets
+        mc mb local_minio/jobs
+        mc mb local_minio/output
+        mc put /datasets/d1.csv local_minio/datasets
+        mc put /jobs/sparksample.jar local_minio/jobs
+    volumes:
+      - "./datasets:/datasets"
+      - "./spark-job/target/sparksample-1.0-SNAPSHOT-jar-with-dependencies.jar:/jobs/sparksample.jar"
+
+  spark-master:
+    <<: *spark-image
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl -s http://localhost:8080 > /dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    entrypoint: [
+      "bash",
+      "-c",
+      "/opt/spark/sbin/start-master.sh & sleep inf"
+    ]
+    ports:
+      - '${SPARK_MASTER_UI_PORT}:8080'
+    volumes:
+      - "./spark-job/target/sparksample-1.0-SNAPSHOT-jar-with-dependencies.jar:/jobs/sparksample.jar"
+
+  spark-worker:
+    <<: *spark-image
+    entrypoint:
+      - bash
+      - -c
+      - |
+        /opt/spark/sbin/start-worker.sh spark://spark-master:7077 \
+          --cores 1 \
+          --memory 1G
+        sleep inf
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    ports:
+      - '${SPARK_WORKER_UI_PORT}:8081'
+    volumes:
+      - "./spark-job/target/sparksample-1.0-SNAPSHOT-jar-with-dependencies.jar:/jobs/sparksample.jar"
