@@ -54,8 +54,12 @@ services:
     ]
     ports:
       - '${SPARK_MASTER_UI_PORT}:8080'
+    environment:
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
     volumes:
       - "./spark-job/target/sparksample-1.0-SNAPSHOT-jar-with-dependencies.jar:/jobs/sparksample.jar"
+      - "./spark-docker/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf"
 
   spark-worker:
     <<: *spark-image
@@ -63,14 +67,18 @@ services:
       - bash
       - -c
       - |
-        /opt/spark/sbin/start-worker.sh spark://spark-master:7077 \
-          --cores 1 \
-          --memory 1G
+        /opt/spark/sbin/start-worker.sh spark://spark-master:7077 # \
+          # --cores 1 \
+          # --memory 1G
         sleep inf
     depends_on:
       spark-master:
         condition: service_healthy
     ports:
       - '${SPARK_WORKER_UI_PORT}:8081'
+    environment:
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
     volumes:
       - "./spark-job/target/sparksample-1.0-SNAPSHOT-jar-with-dependencies.jar:/jobs/sparksample.jar"
+      - "./spark-docker/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf"

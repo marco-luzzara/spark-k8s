@@ -1,6 +1,6 @@
 SHELL = /bin/bash
 
-.PHONY: up down run-spark
+.PHONY: up down submit-job create-jar
 
 up:
 	set -a && \
@@ -11,7 +11,7 @@ up:
 down:
 	docker compose down -v
 
-run-spark:
+submit-job:
 	set -a && \
 	source .env && \
 	set +a && \
@@ -19,10 +19,6 @@ run-spark:
 		--class it.unimi.SparkSample \
   		--master spark://spark-master:7077 \
 		--deploy-mode cluster \
-		--conf spark.hadoop.fs.s3a.aws.credentials.provider=org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider \
-		--conf spark.hadoop.fs.s3a.endpoint=minio:9000 \
-		--conf spark.hadoop.fs.s3a.access.key=$$MINIO_ROOT_USER \
-		--conf spark.hadoop.fs.s3a.secret.key=$$MINIO_ROOT_PASSWORD \
 		--conf "spark.driver.extraJavaOptions=--add-exports=java.base/sun.nio.ch=ALL-UNNAMED" \
 		--conf "spark.executor.extraJavaOptions=--add-exports=java.base/sun.nio.ch=ALL-UNNAMED" \
 		file:///jobs/sparksample.jar \
@@ -31,3 +27,7 @@ run-spark:
 		# s3a://jobs/sparksample.jar \
 		# s3a://datasets/d1.csv \
 		# s3a://output/sparksample-output
+
+create-jar:
+	cd spark-job && \
+	mvn package
