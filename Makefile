@@ -25,8 +25,6 @@ submit-job:
 		s3a://datasets/d1.csv \
 		s3a://output/sparksample-output
 		# s3a://jobs/sparksample.jar \
-		# s3a://datasets/d1.csv \
-		# s3a://output/sparksample-output
 
 create-jar:
 	cd spark-job && \
