@@ -1,5 +1,20 @@
 x-spark-image: &spark-image
-  image: spark:3.5.3-java17
+  image: custom-spark
+  build:
+    context: spark-docker
+    dockerfile: ./Dockerfile
+
+
+x-spark-env: &spark-env
+  environment:
+    AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+    AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+
+
+x-spark-volumes: &spark-volumes
+  volumes:
+    - "./spark-docker/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf"
+
 
 services:
   minio:
@@ -37,10 +52,10 @@ services:
         mc put /jobs/sparksample.jar local_minio/jobs
     volumes:
       - "./datasets:/datasets"
-      - "./spark-job/target/sparksample-1.0-SNAPSHOT-jar-with-dependencies.jar:/jobs/sparksample.jar"
+      - "./spark/example-job/target/example-job-1.0.0-jar-with-dependencies.jar:/jobs/sparksample.jar"
 
   spark-master:
-    <<: *spark-image
+    <<: [*spark-image, *spark-env, *spark-volumes]
     healthcheck:
       test: ["CMD", "bash", "-c", "curl -s http://localhost:8080 > /dev/null"]
       interval: 5s
@@ -54,15 +69,9 @@ services:
     ]
     ports:
       - '${SPARK_MASTER_UI_PORT}:8080'
-    environment:
-      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER}
-      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
-    volumes:
-      - "./spark-job/target/sparksample-1.0-SNAPSHOT-jar-with-dependencies.jar:/jobs/sparksample.jar"
-      - "./spark-docker/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf"
 
   spark-worker:
-    <<: *spark-image
+    <<: [*spark-image, *spark-env, *spark-volumes]
     entrypoint:
       - bash
       - -c
@@ -76,9 +85,3 @@ services:
         condition: service_healthy
     ports:
       - '${SPARK_WORKER_UI_PORT}:8081'
-    environment:
-      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER}
-      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
-    volumes:
-      - "./spark-job/target/sparksample-1.0-SNAPSHOT-jar-with-dependencies.jar:/jobs/sparksample.jar"
-      - "./spark-docker/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf"

@@ -20,7 +20,7 @@ Configure the Spark master/worker in `spark-docker/spark-defaults.conf`.
 
 ## `Make` commands
 
-- `up`: `docker compose up -d`
+- `up`: `docker compose up -d`. **Note**: Make sure to run `make create-jar` to create the fat jar that will end up inside the custom docker image.
 - `down`: `docker compose down`
 - `submit-job`: Submit a Spark job
 - `create-jar`: Create the uber jar for the Spark job

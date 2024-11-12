@@ -19,13 +19,13 @@ submit-job:
 		--class it.unimi.SparkSample \
   		--master spark://spark-master:7077 \
 		--deploy-mode cluster \
-		--conf "spark.driver.extraJavaOptions=--add-exports=java.base/sun.nio.ch=ALL-UNNAMED" \
-		--conf "spark.executor.extraJavaOptions=--add-exports=java.base/sun.nio.ch=ALL-UNNAMED" \
-		file:///jobs/sparksample.jar \
+		s3a://jobs/sparksample.jar \
 		s3a://datasets/d1.csv \
 		s3a://output/sparksample-output
-		# s3a://jobs/sparksample.jar \
+
+	# file:///jobs/sparksample.jar \
+	# s3a://jobs/sparksample.jar \
 
 create-jar:
-	cd spark-job && \
-	mvn package
+	( cd spark && mvn package; ) && \
+	cp spark/extra-jars/target/extra-jars-1.0.0-jar-with-dependencies.jar spark-docker/
