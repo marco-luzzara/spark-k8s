@@ -1,7 +1,11 @@
 SHELL = /bin/bash
 
-.PHONY: up down submit-job create-jar
+# Commands
+# - ADDITIONAL_KUBECTL_APPLY_ARGS: additional arguments to pass to `kubectl apply`
 
+.PHONY: up down submit-job create-jar start-cluster
+
+# ******************* Docker Compose *******************
 up:
 	set -a && \
 	source .env && \
@@ -29,3 +33,11 @@ submit-job:
 create-jar:
 	( cd spark && mvn package; ) && \
 	cp spark/extra-jars/target/extra-jars-1.0.0-jar-with-dependencies.jar spark-docker/
+
+# ******************************************************
+# ******************* Kubernetes *******************
+
+start-cluster:
+	kubectl apply ${ADDITIONAL_ARGS} -f 'k8s/*.yml'
+
+# **************************************************
