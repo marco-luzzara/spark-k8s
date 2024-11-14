@@ -16,6 +16,14 @@ SPARK_WORKER_UI_PORT=8082
 
 Configure the Spark master/worker in `spark-docker/spark-defaults.conf`.
 
+### Kubernetes
+
+If you deploy it on Minikube, make sure to enable the `csi-hostpath-driver` addon.
+
+```bash
+minikube addons enable csi-hostpath-driver
+```
+
 ---
 
 ## `Make` commands

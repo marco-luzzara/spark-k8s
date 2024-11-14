@@ -25,8 +25,11 @@ spec:
     app.kubernetes.io/name: minio
   ports:
     - port: 9001
-      targetPort: 9001
+      targetPort: console
       name: console
+    - port: 9000
+      targetPort: api
+      name: api
   type: LoadBalancer
 
 ---
@@ -39,9 +42,9 @@ metadata:
     app.kubernetes.io/name: minio
 spec:
   ports:
-    - port: 9001
-      targetPort: 9001
-      name: console
+    - port: 9000
+      targetPort: api
+      name: api
   type: ClusterIP
   clusterIP: None
   selector:
@@ -75,9 +78,9 @@ spec:
               name: console
             - containerPort: 9000
               name: api
-          # volumeMounts:
-          #   - name: minio-data
-          #     mountPath: /data
+          volumeMounts:
+            - name: minio-data
+              mountPath: /data
           envFrom:
             - secretRef:
                 name: minio-credentials
@@ -88,12 +91,15 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
-  # volumeClaimTemplates:
-  #   - metadata:
-  #       name: minio-data
-  #     spec:
-  #       accessModes: ["ReadWriteMany"]
-  #       storageClassName: "standard"
-  #       resources:
-  #         requests:
-  #           storage: 1Gi
+  volumeClaimTemplates:
+    - metadata:
+        namespace: spark-k8s
+        name: minio-data
+        labels:
+          app.kubernetes.io/name: minio
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: csi-hostpath-sc
+        resources:
+          requests:
+            storage: 1Gi
