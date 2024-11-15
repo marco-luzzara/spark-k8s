@@ -1,11 +1,10 @@
 SHELL = /bin/bash
 
 # Commands
-# - ADDITIONAL_KUBECTL_APPLY_ARGS: additional arguments to pass to `kubectl apply`
 # - MINIO_ENDPOINT: used to seed minio on minikube. To get this endpoint, run `minikube tunnel` first to 
 #	expose the service on localhost
 
-.PHONY: up down submit-job create-jar start-cluster seed-minio
+.PHONY: up down submit-job create-jar start-cluster seed-minio run-job delete-job get-k8s-job-logs
 
 # ******************* Docker Compose *******************
 up:
@@ -40,22 +39,36 @@ create-jar:
 # ******************* Kubernetes *******************
 
 start-cluster:
-	kubectl apply ${ADDITIONAL_ARGS} -f 'k8s/*.yml'
+	cd k8s && \
+	kubectl apply -f namespace.yml -f auth.yml -f minio.yml -f spark.yml
 
 seed-minio:
 	set -a && \
 	source .env && \
 	set +a && \
 	docker run --rm --network=host \
-		-v "./datasets:/datasets" \
 		--entrypoint="bash" \
+		-v "./datasets:/datasets" \
+		-v "./k8s/spark-pod-template.yml:/pod-templates/spark-pod-template.yml" \
 		-v "./spark/example-job/target/example-job-1.0.0-jar-with-dependencies.jar:/jobs/sparksample.jar" \
 		minio/mc -c "\
 			mc alias set local_minio ${MINIO_ENDPOINT} $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD && \
+			mc rb --force local_minio/datasets local_minio/pod-templates local_minio/jobs local_minio/output && \
 			mc mb local_minio/datasets && \
+			mc mb local_minio/pod-templates && \
 			mc mb local_minio/jobs && \
 			mc mb local_minio/output && \
 			mc put /datasets/d1.csv local_minio/datasets && \
+			mc put /pod-templates/spark-pod-template.yml local_minio/pod-templates && \
 			mc put /jobs/sparksample.jar local_minio/jobs"
+
+run-job:
+	kubectl apply -f k8s/spark.yml
+
+delete-job:
+	kubectl delete job/run-spark-task
+
+get-k8s-job-logs:
+	kubectl logs job/run-spark-task
 
 # **************************************************
