@@ -1,0 +1,16 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "properties": {
+        "dockerRegistryRequired": {
+            "description": "flag to create the secret for a private docker registry",
+            "type": "boolean"
+        },
+        "dockerConfigJsonEncoded": {
+            "description": "base64-encoded secret for docker registry credentials. See https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#registry-secret-existing-credentials",
+            "type": "string"
+        }
+    },
+    "required": [],
+    "title": "Values",
+    "type": "object"
+}

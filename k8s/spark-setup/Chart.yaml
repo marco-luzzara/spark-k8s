@@ -1,0 +1,5 @@
+apiVersion: v2
+name: spark-setup
+description: Spark setup deployment for Tasks running
+version: 1.0.0
+appVersion: "3.5.3"
