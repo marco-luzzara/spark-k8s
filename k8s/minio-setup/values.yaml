@@ -1,0 +1,3 @@
+minioImage:
+  repo: minio/minio
+  tag: RELEASE.2024-05-10T01-41-38Z

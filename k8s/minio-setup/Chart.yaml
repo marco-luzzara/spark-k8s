@@ -1,0 +1,4 @@
+apiVersion: v2
+name: minio-setup
+description: Minio deployment
+version: 1.0.0

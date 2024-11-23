@@ -1,0 +1,6 @@
+[submodule "external-deps/vector-disassembler"]
+	path = external-deps/vector-disassembler
+	url = https://github.com/jamesbconner/VectorDisassembler.git
+[submodule "external-deps/ml-tasks"]
+	path = external-deps/ml-tasks
+	url = git@repository.v2.moon-cloud.eu:musa/task-spark.git
