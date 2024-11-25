@@ -2,11 +2,10 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    createdByServiceAccount: "true"
+    createdBySparkServiceAccount: "true"
 spec:
   containers:
     - name: spark-pod
-      # image: maluz/custom-spark:3.5.3-v2
       env:
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
