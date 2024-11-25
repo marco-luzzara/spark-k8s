@@ -1,1 +1,8 @@
 dockerRegistryRequired: false
+s3Endpoint: minio-service.spark-k8s:9000
+
+sparkTaskContainerImage:
+  repo: maluz/custom-spark
+  tag: "3.5.3-v2"
+
+sparkTaskPodTemplatePath: s3a://pod-templates/spark-pod-template.yml

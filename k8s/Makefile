@@ -11,7 +11,7 @@ HELM_VALUES_FILES_OPTIONS := $(foreach file,$(HELM_VALUES_FILES),--values $(file
 .PHONY: install-minio-setup install-spark-setup
 
 install-minio-setup:
-	helm install ${DRY_RUN_INSTALL_OPTIONS} ${HELM_VALUES_FILES_OPTIONS} minio-setup ./minio-setup --namespace="${NAMESPACE}" --create-namespace
+	helm upgrade --install ${DRY_RUN_INSTALL_OPTIONS} ${HELM_VALUES_FILES_OPTIONS} minio-setup ./minio-setup --namespace="${NAMESPACE}" --create-namespace
 	
 install-spark-setup:
-	helm install ${DRY_RUN_INSTALL_OPTIONS} ${HELM_VALUES_FILES_OPTIONS} spark-setup ./spark-setup --namespace="${NAMESPACE}" --create-namespace
+	helm upgrade --install ${DRY_RUN_INSTALL_OPTIONS} ${HELM_VALUES_FILES_OPTIONS} spark-setup ./spark-setup --namespace="${NAMESPACE}" --create-namespace
