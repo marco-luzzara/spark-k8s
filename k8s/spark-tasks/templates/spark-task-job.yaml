@@ -1,0 +1,59 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-spark-task-job
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}
+spec:
+  template:
+    metadata:
+      name: {{ .Release.Name }}-job
+      namespace: {{ .Release.Namespace }}
+      labels:
+        app.kubernetes.io/name: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      containers:
+        - name: run-spark-task
+          image: "{{ .Values.sparkTaskContainerImage.repo }}:{{ .Values.sparkTaskContainerImage.tag }}"
+          args:
+            - "/opt/spark/bin/spark-submit"
+            - "--master"
+            - "k8s://{{ .Values.k8sEndpoint }}"
+            - "--deploy-mode"
+            - "cluster"
+            - "--name"
+            - {{ .Release.Name | quote }}
+            - "--class"
+            - {{ .Values.taskClass | quote }}
+            - "--conf"
+            - "spark.executor.instances={{ .Values.sparkExecutorInstances }}"
+            - {{ .Values.taskJarPath | quote }}
+            {{- range .Values.taskParameters }}
+            - {{ . | quote }}
+            {{- end }}
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.minioCredentialsSecret | quote }}
+                  key: MINIO_ROOT_USER
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.minioCredentialsSecret | quote }}
+                  key: MINIO_ROOT_PASSWORD
+          volumeMounts:
+            - name: {{ .Release.Name }}-spark-config-volume
+              mountPath: /opt/spark/conf
+              readOnly: true
+      volumes:
+        - name: {{ .Release.Name }}-spark-config-volume
+          configMap:
+            name: {{ .Values.sparkConfigMap | quote }}
+            items:
+              - key: "spark-defaults.conf"
+                path: "spark-defaults.conf"
+      restartPolicy: Never
+  backoffLimit: 1

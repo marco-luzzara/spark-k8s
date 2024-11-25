@@ -7,6 +7,7 @@ HELM_VALUES_FILES_OPTIONS := $(foreach file,$(HELM_VALUES_FILES),--values $(file
 # - HELM_VALUES_FILES: space-separated file path of values.yml files to use with `helm install` commands
 # - DRY_RUN=true: enable dry run
 # - NAMESPACE: namespace where kube resources are created
+# - SPARK_TASK: name of the spark task to run
 
 .PHONY: install-minio-setup install-spark-setup
 
@@ -15,3 +16,11 @@ install-minio-setup:
 	
 install-spark-setup:
 	helm upgrade --install ${DRY_RUN_INSTALL_OPTIONS} ${HELM_VALUES_FILES_OPTIONS} spark-setup ./spark-setup --namespace="${NAMESPACE}" --create-namespace
+
+run-spark-task:
+	helm upgrade --install ${DRY_RUN_INSTALL_OPTIONS} ${HELM_VALUES_FILES_OPTIONS} spark-task-${SPARK_TASK} ./spark-tasks --namespace="${NAMESPACE}" --create-namespace
+
+delete-task:
+	helm uninstall spark-task-${SPARK_TASK}
+	# garbage collect the driver pod
+	kubectl delete pod --selector="createdByServiceAccount=true"

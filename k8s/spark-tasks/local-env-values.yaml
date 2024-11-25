@@ -1,0 +1,7 @@
+k8sEndpoint: https://192.168.49.2:8443
+
+sparkTaskContainerImage:
+  repo: maluz/custom-spark
+  tag: "3.5.3-v2"
+
+sparkExecutorInstances: 1

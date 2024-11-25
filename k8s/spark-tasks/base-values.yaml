@@ -1,0 +1,3 @@
+serviceAccountName: spark-setup-spark-service-account
+minioCredentialsSecret: minio-setup-minio-credentials-secret
+sparkConfigMap: spark-setup-spark-task-configs

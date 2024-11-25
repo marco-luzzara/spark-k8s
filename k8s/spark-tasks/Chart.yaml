@@ -1,0 +1,5 @@
+apiVersion: "v2"
+name: "spark-tasks"
+version: "1.0.0"
+description: Deployment of Spark on a cluster with a builtin catalogs of ML tasks
+appVersion: "3.5.3"

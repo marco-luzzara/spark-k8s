@@ -1,25 +1,22 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: spark-pod
-  namespace: spark-k8s
   labels:
-    app.kubernetes.io/name: spark
+    createdByServiceAccount: "true"
 spec:
-  serviceAccountName: spark-service-account
   containers:
     - name: spark-pod
-      image: maluz/custom-spark:3.5.3
+      # image: maluz/custom-spark:3.5.3-v2
       env:
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
-              name: minio-credentials
+              name: minio-setup-minio-credentials-secret
               key: MINIO_ROOT_USER
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
-              name: minio-credentials
+              name: minio-setup-minio-credentials-secret
               key: MINIO_ROOT_PASSWORD
       # volumeMounts:
       #   - name: spark-config-volume

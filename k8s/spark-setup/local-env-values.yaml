@@ -1,5 +1,5 @@
 dockerRegistryRequired: false
-s3Endpoint: minio-service.spark-k8s:9000
+s3Endpoint: minio-setup-minio-service.spark-k8s:9000
 
 sparkTaskContainerImage:
   repo: maluz/custom-spark

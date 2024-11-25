@@ -35,8 +35,25 @@ Recipes for the Docker-compose deployment:
 - `create-jar`: Create the uber jar for the Spark job
 
 Recipes for the K8s deployment:
-- `start-cluster`: create all the k8s resources. **Note**: Before running the K8s Job with spark, make sure to run the `seed-minio` recipe.
+
 - `seed-minio`: seed minio with the dataset, spark jar and pod template.
-- `run-job`: run a sample spark task on k8s
-- `delete-job`: delete the job that triggered the spark task. **Note**: it does not delete the driver and executor pods.
-- `get-k8s-job-logs`: get the spark task logs
+
+(For the following ones, first `cd k8s`)
+
+- `install-minio-setup`: create all the k8s resources for minio. **Note**: make sure to run the `seed-minio` recipe. Example:
+    ```bash
+    make install-minio-setup HELM_VALUES_FILES="./minio-setup/local-env-values.yaml" NAMESPACE="spark-k8s" DRY_RUN=true
+    ```
+- `install-spark-setup`: create all the k8s resources for spark. Example:
+    ```bash
+    make install-spark-setup HELM_VALUES_FILES="./spark-setup/local-env-values.yaml" NAMESPACE="spark-k8s" DRY_RUN=true
+    ```
+- `run-spark-task`: run a Job for the specified Spark task. Example:
+    ```bash
+    make run-spark-task HELM_VALUES_FILES="./spark-tasks/base-values.yaml ./spark-tasks/local-env-values.yaml ./spark-tasks/task-values/local-sample.yaml" \
+        NAMESPACE="spark-k8s" SPARK_TASK="sample" DRY_RUN=true
+    ```
+- `delete-task`: remove a task and garbage collect the driver pods. Example:
+    ```bash
+    make delete-task NAMESPACE="spark-k8s" SPARK_TASK="sample"
+    ```
