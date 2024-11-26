@@ -15,12 +15,14 @@ rules:
       - get
       - list
       - watch
+      - deletecollection
   - apiGroups:
       - ""
     resources:
       - persistentvolumeclaims
     verbs:
       - list
+      - deletecollection
   - apiGroups:
       - ""
     resources:
@@ -35,3 +37,4 @@ rules:
       - update
       - patch
       - delete
+      - deletecollection

@@ -31,7 +31,7 @@ spec:
             - "spark.executor.instances={{ .Values.sparkExecutorInstances }}"
             - {{ .Values.taskJarPath | quote }}
             {{- range .Values.taskParameters }}
-            - {{ . | quote }}
+            - {{ tpl . . | quote }}
             {{- end }}
           env:
             - name: AWS_ACCESS_KEY_ID

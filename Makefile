@@ -38,10 +38,6 @@ create-jar:
 # ******************************************************
 # ******************* Kubernetes *******************
 
-start-cluster:
-	cd k8s && \
-	kubectl apply -f namespace.yml -f auth.yml -f minio.yml -f spark.yml
-
 seed-minio:
 	set -a && \
 	source .env && \
@@ -61,14 +57,5 @@ seed-minio:
 			mc put /datasets/d1.csv local_minio/datasets && \
 			mc put /pod-templates/spark-pod-template.yml local_minio/pod-templates && \
 			mc put /jobs/sparksample.jar local_minio/jobs"
-
-run-job:
-	kubectl apply -f k8s/spark.yml
-
-delete-job:
-	kubectl delete job/run-spark-task
-
-get-k8s-job-logs:
-	kubectl logs job/run-spark-task
 
 # **************************************************
