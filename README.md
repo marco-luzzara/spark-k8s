@@ -40,11 +40,7 @@ Recipes for the K8s deployment:
 
 (For the following ones, first `cd k8s`)
 
-- `install-minio-setup`: create all the k8s resources for minio. **Note**: make sure to run the `seed-minio` recipe. Example:
-    ```bash
-    make install-minio-setup HELM_VALUES_FILES="./minio-setup/local-env-values.yaml" NAMESPACE="spark-k8s" DRY_RUN=true
-    ```
-- `install-spark-setup`: create all the k8s resources for spark. Example:
+- `install-spark-setup`: create all the k8s resources for spark. **Note**: if minio needs to be installed, before running a task make sure to run the `seed-minio` recipe.Example:
     ```bash
     make install-spark-setup HELM_VALUES_FILES="./spark-setup/local-env-values.yaml" NAMESPACE="spark-k8s" DRY_RUN=true
     ```

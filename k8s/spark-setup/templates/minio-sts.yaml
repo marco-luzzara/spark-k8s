@@ -3,19 +3,20 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ .Release.Name }}-minio
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app.kubernetes.io/name: {{ .Release.Name }}
+{{ $metaInfo := dict "PartOf" "minio" "Component" "node" "Global" . -}}
+{{ include "prin.commonMetadata" $metaInfo | indent 2 }}
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ .Release.Name }}
-  serviceName: {{ .Release.Name }}-minio-service
+      app.kubernetes.io/part-of: "minio"
+      app.kubernetes.io/component: "node"
+  serviceName: {{ .Release.Name }}-minio-svc
   replicas: 1
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ .Release.Name }}
+        app.kubernetes.io/part-of: "minio"
+        app.kubernetes.io/component: "node"
     spec:
       containers:
         - name: minio
@@ -27,7 +28,7 @@ spec:
             - containerPort: 9000
               name: api
           volumeMounts:
-            - name: minio-data
+            - name: {{ .Release.Name }}-minio-data
               mountPath: /data
           envFrom:
             - secretRef:
@@ -41,10 +42,9 @@ spec:
             timeoutSeconds: 5
   volumeClaimTemplates:
     - metadata:
-        namespace: {{ .Release.Namespace }}
-        name: minio-data
-        labels:
-          app.kubernetes.io/name: {{ .Release.Name }}
+        name: {{ .Release.Name }}-minio-data
+{{ $metaInfo := dict "PartOf" "minio" "Component" "data" "Global" . -}}
+{{ include "prin.commonMetadata" $metaInfo | indent 8 }}
       spec:
         accessModes: ["ReadWriteOnce"]
         storageClassName: csi-hostpath-sc

@@ -12,10 +12,7 @@ HELM_VALUES_FILES_OPTIONS := $(foreach file,$(HELM_VALUES_FILES),--values $(file
 CREATE_NS_OPTION := $(if $(CREATE_NS),--create-namespace,)
 
 
-.PHONY: install-minio-setup install-spark-setup run-spark-task delete-task
-
-install-minio-setup:
-	helm upgrade --install ${DRY_RUN_INSTALL_OPTIONS} ${HELM_VALUES_FILES_OPTIONS} minio-setup ./minio-setup --namespace="${NAMESPACE}" ${CREATE_NS_OPTION}
+.PHONY: install-spark-setup run-spark-task delete-task
 	
 install-spark-setup:
 	helm upgrade --install ${DRY_RUN_INSTALL_OPTIONS} ${HELM_VALUES_FILES_OPTIONS} spark-setup ./spark-setup --namespace="${NAMESPACE}" ${CREATE_NS_OPTION}

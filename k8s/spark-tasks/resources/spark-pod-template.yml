@@ -10,12 +10,12 @@ spec:
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
-              name: minio-setup-minio-credentials-secret
+              name: spark-setup-minio-credentials-secret
               key: MINIO_ROOT_USER
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
-              name: minio-setup-minio-credentials-secret
+              name: spark-setup-minio-credentials-secret
               key: MINIO_ROOT_PASSWORD
       # volumeMounts:
       #   - name: spark-config-volume

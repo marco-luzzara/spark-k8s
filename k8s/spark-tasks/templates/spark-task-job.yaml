@@ -2,16 +2,14 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: {{ .Release.Name }}-spark-task-job
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app.kubernetes.io/name: {{ .Release.Name }}
+{{ $metaInfo := dict "PartOf" "spark" "Component" "task" "Global" . -}}
+{{ include "prin.commonMetadata" $metaInfo | indent 2 }}
 spec:
   template:
     metadata:
-      name: {{ .Release.Name }}-job
-      namespace: {{ .Release.Namespace }}
-      labels:
-        app.kubernetes.io/name: {{ .Release.Name }}
+      name: {{ .Release.Name }}-task-pod
+{{ $metaInfo := dict "PartOf" "spark" "Component" "task" "Global" . -}}
+{{ include "prin.commonMetadata" $metaInfo | indent 6 }}
     spec:
       serviceAccountName: {{ .Values.serviceAccountName }}
       containers:

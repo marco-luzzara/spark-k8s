@@ -2,9 +2,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: {{ .Release.Name }}-spark-role
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app.kubernetes.io/name: {{ .Release.Name }}
+{{ $metaInfo := dict "PartOf" "spark" "Component" "auth" "Global" . -}}
+{{ include "prin.commonMetadata" $metaInfo | indent 2 }}
 rules:
   - apiGroups:
       - ""
