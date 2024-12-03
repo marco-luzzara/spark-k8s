@@ -1,8 +1,10 @@
 # Spark on Kube
 
-## Configuration
+## Local with DockerCompose
 
 Set the env variables in `.env`:
+
+### Configs
 
 ```ini
 MINIO_ROOT_USER=miniouser
@@ -16,17 +18,7 @@ SPARK_WORKER_UI_PORT=8082
 
 Configure the Spark master/worker in `spark-docker/spark-defaults.conf`.
 
-### Kubernetes
-
-If you deploy it on Minikube, make sure to enable the `csi-hostpath-driver` addon.
-
-```bash
-minikube addons enable csi-hostpath-driver
-```
-
----
-
-## `Make` commands
+### Make
 
 Recipes for the Docker-compose deployment:
 - `up`: `docker compose up -d`. **Note**: Make sure to run `make create-jar` to create the fat jar that will end up inside the custom docker image.
@@ -34,11 +26,17 @@ Recipes for the Docker-compose deployment:
 - `submit-job`: Submit a Spark job
 - `create-jar`: Create the uber jar for the Spark job
 
-Recipes for the K8s deployment:
+---
+
+## K8S
+
+The deployment includes an optional minio instance necessary to save input/output of Spark tasks. With `make`:
+
+(Shared with the local configuration)
 
 - `seed-minio`: seed minio with the dataset, spark jar and pod template.
 
-(For the following ones, first `cd k8s`)
+(For the following ones, change Makefile and `cd k8s`)
 
 - `install-spark-setup`: create all the k8s resources for spark. **Note**: if minio needs to be installed, before running a task make sure to run the `seed-minio` recipe.Example:
     ```bash

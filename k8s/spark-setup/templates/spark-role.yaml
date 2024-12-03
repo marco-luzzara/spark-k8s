@@ -14,20 +14,13 @@ rules:
       - get
       - list
       - watch
-      - deletecollection
-  - apiGroups:
-      - ""
-    resources:
-      - persistentvolumeclaims
-    verbs:
-      - list
-      - deletecollection
   - apiGroups:
       - ""
     resources:
       - configmaps
       - pods
       - services
+      - persistentvolumeclaims
     verbs:
       - create
       - get

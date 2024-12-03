@@ -1,12 +1,60 @@
 {
     "$schema": "https://json-schema.org/draft-07/schema#",
     "properties": {
-        "dockerRegistryRequired": {
-            "description": "flag to create the secret for a private docker registry",
+        "minioAlreadyAvailable": {
+            "description": "Flag to enable the deployment of minio. false to deploy minio, true otherwise.",
             "type": "boolean"
         },
+        "minioImage": {
+            "description": "Describe the container image for minio. **Note**: must be filled only when minioAlreadyAvailable = false",
+            "type": "object",
+            "properties": {
+                "repo": {
+                    "description": "container image repo for minio",
+                    "type": "string"
+                },
+                "tag": {
+                    "description": "container image tag for minio",
+                    "type": "string"
+                }
+            }
+        },
+        "minioUser": {
+            "description": "plain-text user for minio",
+            "type": "string"
+        },
+        "minioPassword": {
+            "description": "plain-text password for minio",
+            "type": "string"
+        },
+        "dockerRegistryRequired": {
+            "description": "flag to create the secret for a private docker registry. true to create the secret, false otherwise",
+            "type": "boolean"
+        },
+        "sparkTaskContainerImage": {
+            "description": "Describe the container image for a spark task",
+            "type": "object",
+            "properties": {
+                "repo": {
+                    "description": "container image repo for spark task",
+                    "type": "string"
+                },
+                "tag": {
+                    "description": "container image tag for spark task",
+                    "type": "string"
+                }
+            }
+        },
+        "s3Endpoint": {
+            "description": "Endpoint of the S3 (or compatible) service where data is stored. **Note**: must be filled only when minioAlreadyAvailable = true.",
+            "type": "string"
+        },
+        "sparkTaskPodTemplatePath": {
+            "description": "Path where the Pod template for a spark task is located. ",
+            "type": "string"
+        },
         "dockerConfigJsonEncoded": {
-            "description": "base64-encoded secret for docker registry credentials. See https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#registry-secret-existing-credentials",
+            "description": "base64-encoded secret for docker registry credentials. See https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#registry-secret-existing-credentials. **Node**: must be filled only when dockerRegistryRequired = true",
             "type": "string"
         }
     },

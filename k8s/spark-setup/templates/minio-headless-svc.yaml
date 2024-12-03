@@ -13,6 +13,5 @@ spec:
   type: ClusterIP
   clusterIP: None
   selector:
-    app.kubernetes.io/part-of: "minio"
-    app.kubernetes.io/component: "node"
+{{ include "prin.commonLabels" ( dict "PartOf" "minio" "Component" "node" "Global" . ) | indent 4 }}
 {{ end -}}
