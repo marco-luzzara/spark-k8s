@@ -1,4 +1,4 @@
-{{ define "prin.commonMetadata" -}}
+{{ define "pipelineDemo.commonMetadata" -}}
 namespace: {{ .Global.Release.Namespace }}
 labels:
   app.kubernetes.io/name: {{ .Global.Chart.Name }}

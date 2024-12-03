@@ -1,9 +1,9 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ .Release.Name }}-spark-role
-{{ $metaInfo := dict "PartOf" "spark" "Component" "auth" "Global" . -}}
-{{ include "prin.commonMetadata" $metaInfo | indent 2 }}
+  name: {{ .Release.Name }}-role
+{{ $metaInfo := dict "PartOf" "auth" "Component" "role" "Global" . -}}
+{{ include "pipelineDemo.commonMetadata" $metaInfo | indent 2 }}
 rules:
   - apiGroups:
       - ""
@@ -14,6 +14,7 @@ rules:
       - get
       - list
       - watch
+      - delete
   - apiGroups:
       - ""
     resources:

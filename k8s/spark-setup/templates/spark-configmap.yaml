@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-spark-task-configmap
 {{ $metaInfo := dict "PartOf" "spark" "Component" "task-config" "Global" . -}}
-{{ include "prin.commonMetadata" $metaInfo | indent 2 }}
+{{ include "pipelineDemo.commonMetadata" $metaInfo | indent 2 }}
 data:
   spark-defaults.conf: |
     spark.hadoop.fs.s3a.aws.credentials.provider                com.amazonaws.auth.EnvironmentVariableCredentialsProvider
@@ -15,6 +15,6 @@ data:
     spark.kubernetes.container.image                            {{ .Values.sparkTaskContainerImage.repo }}:{{ .Values.sparkTaskContainerImage.tag }}
     spark.kubernetes.driver.podTemplateFile                     {{ .Values.sparkTaskPodTemplatePath }}
     spark.kubernetes.executor.podTemplateFile                   {{ .Values.sparkTaskPodTemplatePath }}
-    spark.kubernetes.authenticate.driver.serviceAccountName     {{ .Release.Name }}-spark-service-account
-    spark.kubernetes.authenticate.executor.serviceAccountName   {{ .Release.Name }}-spark-service-account
+    spark.kubernetes.authenticate.driver.serviceAccountName     {{ .Release.Name }}-service-account
+    spark.kubernetes.authenticate.executor.serviceAccountName   {{ .Release.Name }}-service-account
     spark.kubernetes.namespace                                  {{ .Release.Namespace }}
