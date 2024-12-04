@@ -11,3 +11,7 @@ namespace: {{ .Global.Release.Namespace }}
 labels:
 {{ include "pipelineDemo.commonLabels" . | indent 2 }}
 {{- end }}
+
+{{ define "pipelineDemo.computedS3Endpoint" -}}
+{{ if .Values.minioAlreadyAvailable }}{{ .Values.s3Endpoint }}{{ else }}{{ printf "%s-minio-svc.%s:9000" .Release.Name .Release.Namespace }}{{ end }}
+{{- end }}

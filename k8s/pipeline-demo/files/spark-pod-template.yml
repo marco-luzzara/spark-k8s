@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    createdByServiceAccount: "true"
+spec:
+  containers:
+    - name: spark-pod
+      env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-minio-credentials-secret
+              key: MINIO_ROOT_USER
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-minio-credentials-secret
+              key: MINIO_ROOT_PASSWORD
+      # volumeMounts:
+      #   - name: spark-config-volume
+      #     mountPath: /opt/spark/conf
+      #     readOnly: true
+  # volumes:
+  #   - name: spark-config-volume
+  #     configMap:
+  #       name: spark-configs
+  #       items:
+  #         - key: "spark-defaults.conf"
+  #           path: "spark-defaults.conf"

@@ -1,0 +1,4 @@
+apiVersion: v2
+name: pipeline-demo
+description: Deployment of all the components to build an automated pipeline of Spark tasks
+version: 1.0.0

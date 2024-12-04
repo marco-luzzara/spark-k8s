@@ -12,10 +12,16 @@ HELM_VALUES_FILES_OPTIONS := $(foreach file,$(HELM_VALUES_FILES),--values $(file
 CREATE_NS_OPTION := $(if $(CREATE_NS),--create-namespace,)
 
 
-.PHONY: install-spark-setup run-spark-task delete-task
+.PHONY: install run-spark-task delete-task
 	
-install-spark-setup:
-	helm upgrade --install ${DRY_RUN_INSTALL_OPTIONS} ${HELM_VALUES_FILES_OPTIONS} spark-setup ./spark-setup --namespace="${NAMESPACE}" ${CREATE_NS_OPTION}
+install:
+	helm upgrade --install --wait ${DRY_RUN_INSTALL_OPTIONS} ${HELM_VALUES_FILES_OPTIONS} pipeline-demo ./pipeline-demo --namespace="${NAMESPACE}" ${CREATE_NS_OPTION}
+
+uninstall:
+	helm uninstall pipeline-demo --namespace="${NAMESPACE}" || echo "No pipeline-demo release found"
+	helm uninstall pipeline-demo-airflow --namespace="${NAMESPACE}" || echo "No airflow release found"
+	kubectl delete job -l "app.kubernetes.io/part-of=airflow,app.kubernetes.io/component=install-job"
+	kubectl delete job -l "app.kubernetes.io/part-of=spark,app.kubernetes.io/component=upload-spark-pod-template-job"
 
 run-spark-task:
 	helm upgrade --install ${DRY_RUN_INSTALL_OPTIONS} ${HELM_VALUES_FILES_OPTIONS} spark-task-${SPARK_TASK} ./spark-tasks --namespace="${NAMESPACE}" ${CREATE_NS_OPTION}

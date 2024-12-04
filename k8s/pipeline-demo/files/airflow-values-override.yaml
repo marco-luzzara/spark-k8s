@@ -1,0 +1,76 @@
+# images:
+#   airflow:
+#     repository: maluz/airflow-kube
+#     tag: "1.0.0"
+
+config:
+  webserver:
+    expose_config: "True"
+
+workers:
+  serviceAccount:
+    name: {{ .Release.Name }}-service-account
+
+scheduler:
+  serviceAccount:
+    name: {{ .Release.Name }}-service-account
+
+createUserJob:
+  serviceAccount:
+    name: {{ .Release.Name }}-service-account
+  
+migrateDatabaseJob:
+  serviceAccount:
+    name: {{ .Release.Name }}-service-account
+
+apiServer:
+  serviceAccount:
+    name: {{ .Release.Name }}-service-account
+
+webserver:
+  serviceAccount:
+    name: {{ .Release.Name }}-service-account
+
+triggerer:
+  serviceAccount:
+    name: {{ .Release.Name }}-service-account
+
+dagProcessor:
+  serviceAccount:
+    name: {{ .Release.Name }}-service-account
+
+flower:
+  serviceAccount:
+    name: {{ .Release.Name }}-service-account
+
+statsd:
+  serviceAccount:
+    name: {{ .Release.Name }}-service-account
+
+pgbouncer:
+  serviceAccount:
+    name: {{ .Release.Name }}-service-account
+
+redis:
+  serviceAccount:
+    name: {{ .Release.Name }}-service-account
+
+cleanup:
+  serviceAccount:
+    name: {{ .Release.Name }}-service-account
+
+dags:
+  persistence:
+    enabled: false
+  gitSync:
+    enabled: true
+    repo: https://repository.v2.moon-cloud.eu/marco-luzzara/ml-pipeline-dags.git
+    branch: main
+    subPath: ""
+    depth: 1
+# https://github.com/apache/airflow/blob/main/chart/values.yaml#L2751
+# sshKeySecret: airflow-ssh-secret
+# extraSecrets:
+#   airflow-ssh-secret:
+#     data: |
+#       gitSshKey: '<base64-converted-ssh-private-key>'

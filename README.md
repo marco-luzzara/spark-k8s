@@ -38,9 +38,13 @@ The deployment includes an optional minio instance necessary to save input/outpu
 
 (For the following ones, change Makefile and `cd k8s`)
 
-- `install-spark-setup`: create all the k8s resources for spark. **Note**: if minio needs to be installed, before running a task make sure to run the `seed-minio` recipe.Example:
+- `install`: create all the k8s resources for spark. **Note**: if minio needs to be installed, before running a task make sure to run the `seed-minio` recipe.Example:
     ```bash
-    make install-spark-setup HELM_VALUES_FILES="./spark-setup/local-env-values.yaml" NAMESPACE="spark-k8s" DRY_RUN=true
+    make install HELM_VALUES_FILES="./pipeline-demo/local-env-values.yaml" NAMESPACE="spark-k8s" DRY_RUN=true
+    ```
+-   `uninstall`: uninstall the k8s resources for the pipeline, including Spark, Minio (if present) and Airflow
+    ```bash
+    make uninstall NAMESPACE="spark-k8s"
     ```
 - `run-spark-task`: run a Job for the specified Spark task. Example:
     ```bash

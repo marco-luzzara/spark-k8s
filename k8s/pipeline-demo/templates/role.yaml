@@ -22,6 +22,7 @@ rules:
       - pods
       - services
       - persistentvolumeclaims
+      - serviceaccounts
     verbs:
       - create
       - get

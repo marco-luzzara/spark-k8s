@@ -1,5 +1,0 @@
-apiVersion: v2
-name: spark-setup
-description: Spark (and Minio if necessary) setup deployment for Tasks running
-version: 1.0.0
-appVersion: "3.5.3"
