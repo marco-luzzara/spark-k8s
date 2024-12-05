@@ -1,3 +1,8 @@
+custom-value-serviceAccount: &serviceAccount
+  serviceAccount:
+    name: {{ .Release.Name }}-service-account
+    create: false
+
 # images:
 #   airflow:
 #     repository: maluz/airflow-kube
@@ -8,56 +13,43 @@ config:
     expose_config: "True"
 
 workers:
-  serviceAccount:
-    name: {{ .Release.Name }}-service-account
+  <<: *serviceAccount
 
 scheduler:
-  serviceAccount:
-    name: {{ .Release.Name }}-service-account
+  <<: *serviceAccount
 
 createUserJob:
-  serviceAccount:
-    name: {{ .Release.Name }}-service-account
-  
+  <<: *serviceAccount
+
 migrateDatabaseJob:
-  serviceAccount:
-    name: {{ .Release.Name }}-service-account
+  <<: *serviceAccount
 
 apiServer:
-  serviceAccount:
-    name: {{ .Release.Name }}-service-account
+  <<: *serviceAccount
 
 webserver:
-  serviceAccount:
-    name: {{ .Release.Name }}-service-account
+  <<: *serviceAccount
 
 triggerer:
-  serviceAccount:
-    name: {{ .Release.Name }}-service-account
+  <<: *serviceAccount
 
 dagProcessor:
-  serviceAccount:
-    name: {{ .Release.Name }}-service-account
+  <<: *serviceAccount
 
 flower:
-  serviceAccount:
-    name: {{ .Release.Name }}-service-account
+  <<: *serviceAccount
 
 statsd:
-  serviceAccount:
-    name: {{ .Release.Name }}-service-account
+  <<: *serviceAccount
 
 pgbouncer:
-  serviceAccount:
-    name: {{ .Release.Name }}-service-account
+  <<: *serviceAccount
 
 redis:
-  serviceAccount:
-    name: {{ .Release.Name }}-service-account
+  <<: *serviceAccount
 
 cleanup:
-  serviceAccount:
-    name: {{ .Release.Name }}-service-account
+  <<: *serviceAccount
 
 dags:
   persistence:

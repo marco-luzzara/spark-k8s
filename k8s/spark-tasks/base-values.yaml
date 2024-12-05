@@ -1,3 +1,3 @@
-serviceAccountName: spark-setup-service-account
-minioCredentialsSecret: spark-setup-minio-credentials-secret
-sparkConfigMap: spark-setup-spark-task-configmap
+serviceAccountName: pipeline-demo-service-account
+minioCredentialsSecret: pipeline-demo-minio-credentials-secret
+sparkConfigMap: pipeline-demo-spark-task-configmap

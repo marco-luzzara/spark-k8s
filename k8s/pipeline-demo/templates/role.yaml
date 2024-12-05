@@ -6,29 +6,42 @@ metadata:
 {{ include "pipelineDemo.commonMetadata" $metaInfo | indent 2 }}
 rules:
   - apiGroups:
-      - ""
+      - "*"
     resources:
-      - secrets
+      - "*"
     verbs:
-      - create
-      - get
-      - list
-      - watch
-      - delete
-  - apiGroups:
-      - ""
-    resources:
-      - configmaps
-      - pods
-      - services
-      - persistentvolumeclaims
-      - serviceaccounts
-    verbs:
-      - create
-      - get
-      - list
-      - watch
-      - update
-      - patch
-      - delete
-      - deletecollection
+      - "*"
+  # - apiGroups:
+  #     - ""
+  #   resources:
+  #     - secrets
+  #   verbs:
+  #     - create
+  #     - get
+  #     - list
+  #     - watch
+  #     - delete
+  # - apiGroups:
+  #     - ""
+  #   resources:
+  #     - configmaps
+  #     - pods
+  #     - services
+  #     - persistentvolumeclaims
+  #     - serviceaccounts
+  #   verbs:
+  #     - create
+  #     - get
+  #     - list
+  #     - watch
+  #     - update
+  #     - patch
+  #     - delete
+  #     - deletecollection
+  # - apiGroups:
+  #     - "rbac.authorization.k8s.io"
+  #   resources:
+  #     - roles
+  #     - rolebindings
+  #   verbs:
+  #     - "*"

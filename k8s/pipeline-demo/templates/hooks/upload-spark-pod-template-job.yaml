@@ -22,16 +22,9 @@ spec:
             - "bash"
             - "-c"
             - |
-              curl https://dl.min.io/client/mc/release/linux-amd64/mc \
-                --create-dirs \
-                -o $HOME/minio-binaries/mc
-
-              chmod +x $HOME/minio-binaries/mc
-              export PATH=$PATH:$HOME/minio-binaries/
-
               mc alias set minio {{ template "pipelineDemo.computedS3Endpoint" . }} $AWS_ACCESS_KEY_ID $AWS_SECRET_ACCESS_KEY
               mc rm --versions --force minio/{{ .Release.Namespace }}/pod-templates/spark-pod-template.yml || echo "No pod template found!"
-              mc put /uploads/spark-pod-template.yml minio/{{ .Release.Namespace }}/pod-templates && echo "Pod template successfully uploaded"
+              mc put /uploads/spark-pod-template.yml minio/{{ .Release.Namespace }}/pod-templates/spark-pod-template.yml && echo "Pod template successfully uploaded"
           volumeMounts:
             - name: spark-pod-template-volume
               mountPath: "/uploads"
