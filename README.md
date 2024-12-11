@@ -30,6 +30,8 @@ Recipes for the Docker-compose deployment:
 
 ## K8S
 
+### ⚠️⚠️Important⚠️⚠️: Do not publish the Helm package <sup>[1]</sup>
+
 The deployment includes an optional minio instance necessary to save input/output of Spark tasks. With `make`:
 
 (Shared with the local configuration)
@@ -42,7 +44,7 @@ The deployment includes an optional minio instance necessary to save input/outpu
     ```bash
     make install HELM_VALUES_FILES="./pipeline-demo/local-env-values.yaml" NAMESPACE="spark-k8s" DRY_RUN=true
     ```
--   `uninstall`: uninstall the k8s resources for the pipeline, including Spark, Minio (if present) and Airflow
+- `uninstall`: uninstall the k8s resources for the pipeline, including Spark, Minio (if present) and Airflow
     ```bash
     make uninstall NAMESPACE="spark-k8s"
     ```
@@ -55,3 +57,6 @@ The deployment includes an optional minio instance necessary to save input/outpu
     ```bash
     make delete-task NAMESPACE="spark-k8s" SPARK_TASK="sample"
     ```
+
+
+<sup>[1]</sup> TODO: the package includes all the files that should be excluded from the `.helmignore`. However, excluding them from there, makes them invisible to `.File.Get`. See [this issue](https://github.com/helm/helm/issues/3050).
