@@ -1,0 +1,47 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Name }}-cluster-role
+{{ $metaInfo := dict "PartOf" "auth" "Component" "cluster-role" "Global" . -}}
+{{ include "pipelineDemo.commonMetadata" $metaInfo | indent 2 }}
+rules:
+  - apiGroups:
+      - "*"
+    resources:
+      - "*"
+    verbs:
+      - "*"
+  # - apiGroups:
+  #     - ""
+  #   resources:
+  #     - secrets
+  #   verbs:
+  #     - create
+  #     - get
+  #     - list
+  #     - watch
+  #     - delete
+  # - apiGroups:
+  #     - ""
+  #   resources:
+  #     - configmaps
+  #     - pods
+  #     - services
+  #     - persistentvolumeclaims
+  #     - serviceaccounts
+  #   verbs:
+  #     - create
+  #     - get
+  #     - list
+  #     - watch
+  #     - update
+  #     - patch
+  #     - delete
+  #     - deletecollection
+  # - apiGroups:
+  #     - "rbac.authorization.k8s.io"
+  #   resources:
+  #     - roles
+  #     - rolebindings
+  #   verbs:
+  #     - "*"

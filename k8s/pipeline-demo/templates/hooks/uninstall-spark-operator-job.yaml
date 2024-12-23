@@ -1,8 +1,8 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ .Release.Name }}-uninstall-airflow-job
-{{ $metaInfo := dict "PartOf" "airflow" "Component" "uninstall-job" "Global" . -}}
+  name: {{ .Release.Name }}-uninstall-spark-operator-job
+{{ $metaInfo := dict "PartOf" "spark-operator" "Component" "uninstall-spark-operator" "Global" . -}}
 {{ include "pipelineDemo.commonMetadata" $metaInfo | indent 2 }}
   annotations:
     "helm.sh/hook": pre-delete
@@ -11,18 +11,18 @@ metadata:
 spec:
   template:
     metadata:
-      name: {{ .Release.Name }}-uninstall-airflow-pod
+      name: {{ .Release.Name }}-uninstall-spark-operator-pod
 {{ include "pipelineDemo.commonMetadata" $metaInfo | indent 6 }}
     spec:
       serviceAccountName: {{ .Release.Name }}-service-account
       containers:
-        - name: {{ .Release.Name }}-uninstall-airflow
+        - name: {{ .Release.Name }}-uninstall-spark-operator
           image: "alpine/k8s:1.31.3"
           command: 
             - "bash"
             - "-c"
             - |
-              helm uninstall {{ .Release.Name }}-airflow \
-                --namespace {{ .Release.Namespace }} || echo "No airflow release found!"
+              helm uninstall {{ .Release.Name }}-spark-operator \
+                --namespace {{ .Release.Namespace }} || echo "No Spark Operator release found!"
       restartPolicy: Never
   backoffLimit: 1

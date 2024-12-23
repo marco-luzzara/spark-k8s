@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Release.Name }}-cluster-role-binding
+{{ $metaInfo := dict "PartOf" "auth" "Component" "cluster-role-binding" "Global" . -}}
+{{ include "pipelineDemo.commonMetadata" $metaInfo | indent 2 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ .Release.Name }}-cluster-role
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Release.Name }}-service-account
+    namespace: {{ .Release.Namespace }}

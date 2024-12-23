@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-install-spark-operator-job
+{{ $metaInfo := dict "PartOf" "spark" "Component" "install-k8s-operator" "Global" . -}}
+{{ include "pipelineDemo.commonMetadata" $metaInfo | indent 2 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "2"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: {{ .Release.Name }}-install-spark-operator-pod
+{{ include "pipelineDemo.commonMetadata" $metaInfo | indent 6 }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}-service-account
+      containers:
+        - name: {{ .Release.Name }}-install-spark-operator
+          image: "alpine/k8s:1.31.3"
+          command: 
+            - "bash"
+            - "-c"
+            - |
+              helm repo add spark-operator https://kubeflow.github.io/spark-operator
+              helm repo update
+
+              helm upgrade --install {{ .Release.Name }}-spark-operator spark-operator/spark-operator \
+                --namespace {{ .Release.Namespace }}
+      restartPolicy: Never
+  backoffLimit: 1

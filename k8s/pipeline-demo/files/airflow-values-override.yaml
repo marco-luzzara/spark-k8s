@@ -7,7 +7,7 @@ custom-value-serviceAccount: &serviceAccount
 images:
   airflow:
     repository: maluz/custom-airflow-k8s
-    tag: "1.0.0"
+    tag: "2.0.0"
 
 config:
   webserver:
@@ -57,7 +57,7 @@ dags:
     enabled: false
   gitSync:
     enabled: true
-    repo: git@repository.v2.moon-cloud.eu:marco-luzzara/ml-pipeline-dags.git
+    repo: ssh://git@repository.v2.moon-cloud.eu:2222/marco-luzzara/ml-pipeline-dags.git
     branch: main
     subPath: ""
     depth: 1
