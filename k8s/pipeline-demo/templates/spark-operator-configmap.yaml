@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-spark-operator-configmap
+{{ $metaInfo := dict "PartOf" "spark-operator" "Component" "config" "Global" . -}}
+{{ include "pipelineDemo.commonMetadata" $metaInfo | indent 2 }}
+data:
+  override-values.yaml: |
+{{ tpl ( .Files.Get "files/spark-operator-override-values.yaml" ) . | indent 4 }}

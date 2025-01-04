@@ -26,6 +26,18 @@ spec:
               helm repo update
 
               helm upgrade --install {{ .Release.Name }}-spark-operator spark-operator/spark-operator \
-                --namespace {{ .Release.Namespace }}
+                --namespace {{ .Release.Namespace }} \
+                --values /config/override-values.yaml
+          volumeMounts:
+            - name: spark-operator-config
+              mountPath: "/config"
+              readOnly: true
       restartPolicy: Never
+      volumes:
+        - name: spark-operator-config
+          configMap:
+            name: {{ .Release.Name }}-spark-operator-configmap
+            items:
+            - key: "override-values.yaml"
+              path: "override-values.yaml"
   backoffLimit: 1

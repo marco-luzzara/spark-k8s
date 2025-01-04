@@ -22,6 +22,7 @@ CREATE_NS_OPTION := $(if $(CREATE_NS),--create-namespace,)
 install:
 	helm upgrade --install --wait ${DRY_RUN_INSTALL_OPTIONS} ${HELM_VALUES_FILES_OPTIONS} pipeline-demo ./pipeline-demo --namespace="${NAMESPACE}" ${CREATE_NS_OPTION}
 
+
 # Parameters \
 - NAMESPACE: namespace where kube resources have been created
 uninstall:
@@ -40,6 +41,7 @@ uninstall:
 run-spark-task:
 	helm upgrade --install ${DRY_RUN_INSTALL_OPTIONS} ${HELM_VALUES_FILES_OPTIONS} spark-task-${SPARK_TASK} ./spark-tasks --namespace="${NAMESPACE}" ${CREATE_NS_OPTION}
 
+
 # Parameters \
 - SPARK_TASK: name of the spark task to run
 delete-task:
@@ -47,10 +49,12 @@ delete-task:
 	# garbage collect the driver pod
 	kubectl delete pod --selector="createdByServiceAccount=true"
 
+
 # Parameters \
 - IMAGE_TAG: image tag for airflow
 build-airflow-image:
 	docker build -t ${IMAGE_TAG} ./airflow
+
 
 # Parameters \
 - WORKER_POD_NAME: airflow worker pod name
@@ -64,3 +68,45 @@ setup-airflow:
 			}
 		}' \
 		in_cluster_connection
+
+
+# Parameters \
+- TOKEN_SECRET: name of the k8s secret containing the service-account token \
+- K8S_ENDPOINT: k8s endpoint (e.g. https://localhost:6443)
+generate-kube-config:
+	TOKEN="$$(kubectl get secret/${TOKEN_SECRET} -o=jsonpath="{ .data.token }" | base64 -d)" && \
+	CA=$$(kubectl get secret/${TOKEN_SECRET} -o jsonpath="{ .data.ca\.crt }") && \
+	NAMESPACE=$$(kubectl get secret/${TOKEN_SECRET} -o jsonpath="{ .data.namespace }" | base64 -d) && \
+	echo "{ \
+		\"kind\": \"Config\", \
+		\"apiVersion\": \"v1\", \
+		\"preferences\": {}, \
+		\"clusters\": [ \
+			{ \
+				\"name\": \"service-account-cluster\", \
+				\"cluster\": { \
+					\"server\": \"${K8S_ENDPOINT}\", \
+					\"certificate-authority-data\": \"$$CA\" \
+				} \
+			} \
+		], \
+		\"users\": [ \
+			{ \
+				\"name\": \"service-account\", \
+				\"user\": { \
+					\"token\": \"$$TOKEN\" \
+				} \
+			} \
+		], \
+		\"contexts\": [ \
+			{ \
+				\"name\": \"service-account-context\", \
+				\"context\": { \
+					\"cluster\": \"service-account-cluster\", \
+					\"user\": \"service-account\", \
+					\"namespace\": \"$$NAMESPACE\" \
+				} \
+			} \
+		], \
+		\"current-context\": \"service-account-context\" \
+	}" | sed 's/	//g'

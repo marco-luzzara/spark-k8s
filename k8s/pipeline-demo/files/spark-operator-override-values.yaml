@@ -1,0 +1,91 @@
+# reference: https://github.com/kubeflow/spark-operator/blob/master/charts/spark-operator-chart/values.yaml
+
+controller:
+  # -- Configure the verbosity of logging, can be one of `debug`, `info`, `error`.
+  logLevel: info
+
+  serviceAccount:
+    # -- Specifies whether to create a service account for the controller.
+    create: false
+    # -- Optional name for the controller service account.
+    name: {{ .Release.Name }}-service-account
+    # -- Extra annotations for the controller service account.
+    annotations: {}
+    # -- Auto-mount service account token to the controller pods.
+    automountServiceAccountToken: true
+
+  rbac:
+    # -- Specifies whether to create RBAC resources for the controller.
+    create: false
+    # -- Extra annotations for the controller RBAC resources.
+    annotations: {}
+
+webhook:
+  # -- Configure the verbosity of logging, can be one of `debug`, `info`, `error`.
+  logLevel: info
+
+  serviceAccount:
+    # -- Specifies whether to create a service account for the webhook.
+    create: false
+    # -- Optional name for the webhook service account.
+    name: {{ .Release.Name }}-service-account
+    # -- Extra annotations for the webhook service account.
+    annotations: {}
+    # -- Auto-mount service account token to the webhook pods.
+    automountServiceAccountToken: true
+
+  rbac:
+    # -- Specifies whether to create RBAC resources for the webhook.
+    create: false
+    # -- Extra annotations for the webhook RBAC resources.
+    annotations: {}
+
+spark:
+  # -- List of namespaces where to run spark jobs.
+  # If empty string is included, all namespaces will be allowed.
+  # Make sure the namespaces have already existed.
+  jobNamespaces:
+    - ""
+
+  serviceAccount:
+    # -- Specifies whether to create a service account for spark applications.
+    create: false
+    # -- Optional name for the spark service account.
+    name: {{ .Release.Name }}-service-account
+    # -- Optional annotations for the spark service account.
+    annotations: {}
+    # -- Auto-mount service account token to the spark applications pods.
+    automountServiceAccountToken: true
+
+  rbac:
+    # -- Specifies whether to create RBAC resources for spark applications.
+    create: false
+    # -- Optional annotations for the spark application RBAC resources.
+    annotations: {}
+
+prometheus:
+  metrics:
+    # -- Specifies whether to enable prometheus metrics scraping.
+    enable: true
+    # -- Metrics port.
+    port: 8080
+    # -- Metrics port name.
+    portName: metrics
+    # -- Metrics serving endpoint.
+    endpoint: /metrics
+    # -- Metrics prefix, will be added to all exported metrics.
+    prefix: ""
+
+  # Prometheus pod monitor for controller pods
+  podMonitor:
+    # -- Specifies whether to create pod monitor.
+    # Note that prometheus metrics should be enabled as well.
+    create: false
+    # -- Pod monitor labels
+    labels: {}
+    # -- The label to use to retrieve the job name from
+    jobLabel: spark-operator-podmonitor
+    # -- Prometheus metrics endpoint properties. `metrics.portName` will be used as a port
+    podMetricsEndpoint:
+      scheme: http
+      interval: 5s

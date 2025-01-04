@@ -58,5 +58,32 @@ The deployment includes an optional minio instance necessary to save input/outpu
     make delete-task NAMESPACE="spark-k8s" SPARK_TASK="sample"
     ```
 
+- `setup-airflow`: Create the in-cluster connection for the kubernetes operator for Airflow
+    ```bash
+    make setup-airflow WORKER_POD_NAME="pipeline-demo-airflow-worker-0"
+    ```
+
+- `generate-kube-config`: Generate kube config for kubernetes operator for Airflow. The returned kube config must be manually installed.
+    ```bash
+    make generate-kube-config TOKEN_SECRET="pipeline-demo-service-account-token-secret" K8S_ENDPOINT="https://localhost:6443"
+    ```
+
+### Kube Proxy and traffic capturing
+
+To see K8s internet traffic, follow this procedure:
+
+- Create a Kube Proxy that exposes HTTP port.
+    ```bash
+    kubectl proxy --api-prefix=/ --port=8083 --address="0.0.0.0" --accept-hosts='^.*$' --accept-paths='^.*$'
+    ```
+
+- Run `tcpdump` to start capturing traffic
+    ```bash
+    tcpdump -i any -w kube_proxy_traffic.pcap port 8083
+    ```
+
+- Create a new Kube config and set `KUBECONFIG` env variable with its path (or update the existing one). In the new configuration, the cluster server is `http://you_server_endpoint:8083`.
+
+
 
 <sup>[1]</sup> TODO: the package includes all the files that should be excluded from the `.helmignore`. However, excluding them from there, makes them invisible to `.File.Get`. See [this issue](https://github.com/helm/helm/issues/3050).

@@ -35,9 +35,9 @@ create-jar:
 	( cd spark && mvn package; ) && \
 	cp spark/extra-jars/target/extra-jars-1.0.0-jar-with-dependencies.jar spark-docker/
 
-# ******************************************************
-# ******************* Kubernetes *******************
 
+# Parameters \
+- MINIO_ENDPOINT: minio endpoint
 seed-minio:
 	set -a && \
 	source .env && \
@@ -57,5 +57,3 @@ seed-minio:
 			mc put /datasets/d1.csv local_minio/datasets && \
 			mc put /pod-templates/spark-pod-template.yml local_minio/pod-templates && \
 			mc put /jobs/sparksample.jar local_minio/jobs"
-
-# **************************************************
