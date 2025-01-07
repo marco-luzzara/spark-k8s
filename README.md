@@ -68,6 +68,10 @@ The deployment includes an optional minio instance necessary to save input/outpu
     make generate-kube-config TOKEN_SECRET="pipeline-demo-service-account-token-secret" K8S_ENDPOINT="https://localhost:6443"
     ```
 
+---
+
+## Troubleshooting
+
 ### Kube Proxy and traffic capturing
 
 To see K8s internet traffic, follow this procedure:
@@ -87,3 +91,13 @@ To see K8s internet traffic, follow this procedure:
 
 
 <sup>[1]</sup> TODO: the package includes all the files that should be excluded from the `.helmignore`. However, excluding them from there, makes them invisible to `.File.Get`. See [this issue](https://github.com/helm/helm/issues/3050).
+
+### Debug Spark Pod
+
+Create a debug pod using `kubectl debug`:
+
+```bash
+kubectl debug $SPARK_POD --copy-to=debug-pod -it --container=spark-kubernetes-driver -- /bin/bash
+```
+
+In the example above, the debug pod recreates a copy of the `spark-kubernetes-driver` container.

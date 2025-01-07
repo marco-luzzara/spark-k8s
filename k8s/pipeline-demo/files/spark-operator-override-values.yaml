@@ -1,5 +1,10 @@
 # reference: https://github.com/kubeflow/spark-operator/blob/master/charts/spark-operator-chart/values.yaml
 
+image:
+  # -- Image pull secrets for private image registry.
+  pullSecrets:
+    - name: {{ .Release.Name }}-registry-secret
+
 controller:
   # -- Configure the verbosity of logging, can be one of `debug`, `info`, `error`.
   logLevel: info

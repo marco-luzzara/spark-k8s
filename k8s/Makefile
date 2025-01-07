@@ -110,3 +110,10 @@ generate-kube-config:
 		], \
 		\"current-context\": \"service-account-context\" \
 	}" | sed 's/	//g'
+
+
+# Parameters \
+- NAMESPACE: namespace \
+- RELEASE_NAME: helm release name
+airflow-ui:
+	kubectl port-forward svc/${RELEASE_NAME}-airflow-webserver 8080:8080 --namespace ${NAMESPACE}
