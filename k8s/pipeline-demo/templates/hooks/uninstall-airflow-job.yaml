@@ -1,3 +1,4 @@
+{{ if not .Values.doInstallAirflowInHook -}}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -26,3 +27,4 @@ spec:
                 --namespace {{ .Release.Namespace }} || echo "No airflow release found!"
       restartPolicy: Never
   backoffLimit: 1
+{{ end -}}

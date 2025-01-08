@@ -1,3 +1,4 @@
+{{ if not .Values.doInstallAirflowInHook -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,3 +8,4 @@ metadata:
 data:
   override-values.yaml: |
 {{ tpl ( .Files.Get "files/airflow-values-override.yaml" ) . | indent 4 }}
+{{ end -}}
