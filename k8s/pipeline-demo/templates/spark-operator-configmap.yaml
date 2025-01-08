@@ -1,4 +1,4 @@
-{{ if not .Values.doInstallSparkOperatorInHook -}}
+{{ if .Values.doInstallSparkOperatorInHook -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:

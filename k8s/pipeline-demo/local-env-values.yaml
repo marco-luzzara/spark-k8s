@@ -15,8 +15,6 @@ sparkTaskContainerImage:
   repo: maluz/custom-spark
   tag: "3.5.3-v2"
 
-sparkTaskPodTemplatePath: s3a://pod-templates/spark-pod-template.yml
-
 # airflow
 doInstallAirflowInHook: true
 

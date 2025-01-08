@@ -49,10 +49,6 @@
             "description": "Endpoint of the S3 (or compatible) service where data is stored. **Note**: must be filled only when minioAlreadyAvailable = true.",
             "type": "string"
         },
-        "sparkTaskPodTemplatePath": {
-            "description": "Path where the Pod template for a spark task is located. ",
-            "type": "string"
-        },
         "dockerConfigJsonEncoded": {
             "description": "base64-encoded secret for docker registry credentials. See https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#registry-secret-existing-credentials. **Node**: must be filled only when dockerRegistryRequired = true",
             "type": "string"

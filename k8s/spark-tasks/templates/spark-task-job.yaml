@@ -27,6 +27,10 @@ spec:
             - {{ .Values.taskClass | quote }}
             - "--conf"
             - "spark.executor.instances={{ .Values.sparkExecutorInstances }}"
+            - "--conf"
+            - "spark.kubernetes.driver.podTemplateFile=/podTemplates/spark-pod-template.yml"
+            - "--conf"
+            - "spark.kubernetes.executor.podTemplateFile=/podTemplates/spark-pod-template.yml"
             - {{ .Values.taskJarPath | quote }}
             {{- range .Values.taskParameters }}
             - {{ tpl . . | quote }}
@@ -46,7 +50,16 @@ spec:
             - name: {{ .Release.Name }}-spark-config-volume
               mountPath: /opt/spark/conf
               readOnly: true
+            - name: {{ .Release.Name }}-spark-pod-template-volume
+              mountPath: /podTemplates
+              readOnly: true
       volumes:
+        - name: {{ .Release.Name }}-spark-pod-template-volume
+          configMap:
+            name: {{ .Values.sparkConfigMap | quote }}
+            items:
+              - key: "spark-pod-template.yml"
+                path: "spark-pod-template.yml"
         - name: {{ .Release.Name }}-spark-config-volume
           configMap:
             name: {{ .Values.sparkConfigMap | quote }}
