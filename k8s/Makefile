@@ -58,16 +58,32 @@ build-airflow-image:
 
 # Parameters \
 - WORKER_POD_NAME: airflow worker pod name
-setup-airflow:
-	kubectl exec -it ${WORKER_POD_NAME} -- airflow connections add --conn-json '
-		{
-			"description": "K8S connections for deploying pods in the same cluster as the Airflow worker pod",
-			"conn_type": "kubernetes", 
-			"extra": {
-				"in_cluster": true
-			}
-		}' \
+add-in-cluster-conn-airflow:
+	kubectl exec -it ${WORKER_POD_NAME} -- airflow connections add --conn-json "\
+		{ \
+			\"description\": \"K8S connections for deploying pods in the same cluster\", \
+			\"conn_type\": \"kubernetes\", \
+			\"extra\": { \
+				\"in_cluster\": true \
+			} \
+		}" \
 		in_cluster_connection
+
+# Parameters \
+- WORKER_POD_NAME: airflow worker pod name \
+- CONNECTION_NAME: name of the airflow connection \
+- CONNECTION_JSON: json description of the connection (to generate using `generate-kube-config`)
+add-external-conn-airflow:
+	ESCAPED_CONNECTION_JSON=$$(echo -n '${CONNECTION_JSON}' | sed 's/\"/\\\\\\"/g')
+	kubectl exec -it ${WORKER_POD_NAME} -- airflow connections add --conn-json "\
+		{ \
+			\"description\": \"K8S connections for deploying pods in an external cluster\", \
+			\"conn_type\": \"kubernetes\", \
+			\"extra\": { \
+				\"kube_config\": \"${ESCAPED_CONNECTION_JSON}\" \
+			} \
+		}" \
+		${CONNECTION_NAME}
 
 
 # Parameters \

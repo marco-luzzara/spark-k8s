@@ -1,0 +1,30 @@
+{{ if .Values.doInstallPrometheusInHook -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-uninstall-prometheus-job
+{{ $metaInfo := dict "PartOf" "monitoring" "Component" "uninstall-prometheus" "Global" . -}}
+{{ include "pipelineDemo.commonMetadata" $metaInfo | indent 2 }}
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+spec:
+  template:
+    metadata:
+      name: {{ .Release.Name }}-uninstall-prometheus-pod
+{{ include "pipelineDemo.commonMetadata" $metaInfo | indent 6 }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}-service-account
+      containers:
+        - name: {{ .Release.Name }}-uninstall-prometheus
+          image: "alpine/k8s:1.31.3"
+          command: 
+            - "bash"
+            - "-c"
+            - |
+              helm uninstall {{ .Release.Name }}-prometheus \
+                --namespace {{ .Release.Namespace }} || echo "No prometheus release found!"
+      restartPolicy: Never
+  backoffLimit: 1
+{{ end -}}

@@ -4,7 +4,7 @@ SHELL = /bin/bash
 # - MINIO_ENDPOINT: used to seed minio on minikube. To get this endpoint, run `minikube tunnel` first to 
 #	expose the service on localhost
 
-.PHONY: up down submit-job create-jar start-cluster seed-minio run-job delete-job get-k8s-job-logs
+.PHONY: up down submit-job create-jar start-cluster seed-minio
 
 # ******************* Docker Compose *******************
 up:
@@ -35,6 +35,12 @@ create-jar:
 	( cd spark && mvn package; ) && \
 	cp spark/extra-jars/target/extra-jars-1.0.0-jar-with-dependencies.jar spark-docker/
 
+
+# Parameters \
+- IMAGE_TAG: image tag
+build-spark-image:
+	docker build -t ${IMAGE_TAG} ./spark-docker
+	
 
 # Parameters \
 - MINIO_ENDPOINT: minio endpoint

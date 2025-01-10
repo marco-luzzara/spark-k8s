@@ -60,9 +60,17 @@
         "doInstallSparkOperatorInHook": {
             "description": "Enable the installation of Spark Operator in a Helm hook",
             "type": "boolean"
+        },
+        "doInstallPrometheusInHook": {
+            "description": "Enable the installation of Prometheus in a Helm hook",
+            "type": "boolean"
         }
     },
-    "required": [],
+    "required": [
+        "doInstallAirflowInHook",
+        "doInstallSparkOperatorInHook",
+        "doInstallPrometheusInHook"
+    ],
     "title": "Values",
     "type": "object"
 }

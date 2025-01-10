@@ -1,0 +1,33 @@
+{{ if .Values.doInstallPrometheusInHook -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-install-prometheus-job
+{{ $metaInfo := dict "PartOf" "monitoring" "Component" "install-prometheus" "Global" . -}}
+{{ include "pipelineDemo.commonMetadata" $metaInfo | indent 2 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "1"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: {{ .Release.Name }}-install-prometheus-pod
+{{ include "pipelineDemo.commonMetadata" $metaInfo | indent 6 }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}-service-account
+      containers:
+        - name: {{ .Release.Name }}-install-airflow
+          image: "alpine/k8s:1.31.3"
+          command: 
+            - "bash"
+            - "-c"
+            - |
+              helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+              helm repo update
+
+              helm upgrade --install {{ .Release.Name }}-prometheus prometheus-community/prometheus \
+                --namespace {{ .Release.Namespace }}
+      restartPolicy: Never
+  backoffLimit: 1
+{{ end -}}
