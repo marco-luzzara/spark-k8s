@@ -1,0 +1,11 @@
+{{ if .Values.doInstallPrometheusInHook -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-prometheus-configmap
+{{ $metaInfo := dict "PartOf" "monitoring" "Component" "prometheus-configmap" "Global" . -}}
+{{ include "pipelineDemo.commonMetadata" $metaInfo | indent 2 }}
+data:
+  override-values.yaml: |
+{{ tpl ( .Files.Get "files/prometheus-values-override.yaml" ) . | indent 4 }}
+{{ end -}}

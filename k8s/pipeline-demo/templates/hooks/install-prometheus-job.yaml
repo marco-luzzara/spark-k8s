@@ -19,15 +19,27 @@ spec:
       containers:
         - name: {{ .Release.Name }}-install-airflow
           image: "alpine/k8s:1.31.3"
-          command: 
+          command:
             - "bash"
             - "-c"
             - |
               helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
               helm repo update
 
-              helm upgrade --install {{ .Release.Name }}-prometheus prometheus-community/prometheus \
-                --namespace {{ .Release.Namespace }}
+              helm upgrade --install {{ .Release.Name }}-prometheus-stack prometheus-community/kube-prometheus-stack \
+                --namespace {{ .Release.Namespace }} \
+                --values /config/override-values.yaml
+          volumeMounts:
+            - name: prometheus-config
+              mountPath: "/config"
+              readOnly: true
       restartPolicy: Never
+      volumes:
+        - name: prometheus-config
+          configMap:
+            name: {{ .Release.Name }}-prometheus-configmap
+            items:
+            - key: "override-values.yaml"
+              path: "override-values.yaml"
   backoffLimit: 1
 {{ end -}}

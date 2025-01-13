@@ -1,0 +1,78 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "properties": {
+        "serviceAccountName": {
+            "description": "serviceaccount running the spark application",
+            "type": "string"
+        },
+        "minioCredentialsSecret": {
+            "description": "K8s secret name containing the minio credentials",
+            "type": "string"
+        },
+        "s3Endpoint": {
+            "description": "S3 endpoint (e.g. http://s3.endpoint.it). Necessary only when doRunWithSparkSubmit is false",
+            "type": "string"
+        },
+        "sparkConfigMap": {
+            "description": "K8s configmap containing the configurations for spark (spark-defaults.conf). Necessary only when doRunWithSparkSubmit is true",
+            "type": "string"
+        },
+        "k8sEndpoint": {
+            "description": "K8s endpoint (e.g. http://mycluster:6443). Necessary only when doRunWithSparkSubmit is true",
+            "type": "string"
+        },
+        "sparkTaskContainerImage": {
+            "description": "Describe the container image for a spark task",
+            "type": "object",
+            "properties": {
+                "repo": {
+                    "description": "container image repo for spark task",
+                    "type": "string"
+                },
+                "tag": {
+                    "description": "container image tag for spark task",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "repo",
+                "tag"
+            ]
+        },
+        "sparkExecutorInstances": {
+            "description": "Number of Spark executors to run the task",
+            "type": "integer"
+        },
+        "taskClass": {
+            "description": "Fully qualified name of the Java class containing the main function",
+            "type": "string"
+        },
+        "taskJarPath": {
+            "description": "Path of the jar containing the spark application",
+            "type": "string"
+        },
+        "taskParameters": {
+            "description": "Parameters to use with the main function execution",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "doRunWithSparkSubmit": {
+            "description": "Run the Spark task with `spark-submit` client",
+            "type": "boolean"
+        }
+    },
+    "required": [
+        "serviceAccountName",
+        "minioCredentialsSecret",
+        "sparkTaskContainerImage",
+        "sparkExecutorInstances",
+        "taskClass",
+        "taskJarPath",
+        "taskParameters",
+        "doRunWithSparkSubmit"
+    ],
+    "title": "Values",
+    "type": "object"
+}

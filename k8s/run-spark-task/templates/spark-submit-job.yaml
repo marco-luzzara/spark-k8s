@@ -1,3 +1,4 @@
+{{ if .Values.doRunWithSparkSubmit -}}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -11,7 +12,7 @@ spec:
 {{ $metaInfo := dict "PartOf" "spark" "Component" "task" "Global" . -}}
 {{ include "sparkTasks.commonMetadata" $metaInfo | indent 6 }}
     spec:
-      serviceAccountName: {{ .Values.serviceAccountName }}
+      serviceAccountName: {{ .Values.serviceAccountName | quote }}
       containers:
         - name: run-spark-task
           image: "{{ .Values.sparkTaskContainerImage.repo }}:{{ .Values.sparkTaskContainerImage.tag }}"
@@ -68,3 +69,4 @@ spec:
                 path: "spark-defaults.conf"
       restartPolicy: Never
   backoffLimit: 1
+{{ end -}}

@@ -62,7 +62,7 @@
             "type": "boolean"
         },
         "doInstallPrometheusInHook": {
-            "description": "Enable the installation of Prometheus in a Helm hook",
+            "description": "Enable the installation of Prometheus and the corresponding operator in a Helm hook",
             "type": "boolean"
         }
     },

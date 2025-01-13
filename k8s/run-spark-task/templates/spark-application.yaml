@@ -1,0 +1,82 @@
+{{ if not .Values.doRunWithSparkSubmit -}}
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: {{ .Release.Name }}-{{ now | date "20060102-150405" }}
+{{ $metaInfo := dict "PartOf" "spark" "Component" "task" "Global" . -}}
+{{ include "sparkTasks.commonMetadata" $metaInfo | indent 2 }}
+spec:
+  type: Java
+  sparkVersion: "3.5.3"
+  mode: cluster
+  image: "{{ .Values.sparkTaskContainerImage.repo }}:{{ .Values.sparkTaskContainerImage.tag }}"
+  mainClass: {{ .Values.taskClass | quote }}
+  mainApplicationFile: {{ .Values.taskJarPath | quote }}
+  arguments:
+    {{- range .Values.taskParameters }}
+    - {{ tpl . . | quote }}
+    {{- end }}
+  # imagePullSecrets:
+  #   - pipeline-demo-registry-secret
+  #timeToLiveSeconds: 120
+  sparkConf:
+    spark.hadoop.fs.s3a.aws.credentials.provider: "com.amazonaws.auth.EnvironmentVariableCredentialsProvider"
+    spark.hadoop.fs.s3a.endpoint: {{ .Values.s3Endpoint | quote }}
+    spark.hadoop.fs.s3a.path.style.access: "true"
+    spark.hadoop.fs.s3a.connection.ssl.enabled: "false"
+    spark.driver.extraJavaOptions: "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED -javaagent:/prometheus/jmx_prometheus_javaagent-0.11.0.jar=8090:/prometheus/prometheus.yaml"
+    spark.executor.extraJavaOptions: "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED -javaagent:/prometheus/jmx_prometheus_javaagent-0.11.0.jar=8090:/prometheus/prometheus.yaml"
+    spark.ui.prometheus.enabled: "true"
+    spark.metrics.conf: "/prometheus/metrics.properties"
+  driver:
+    cores: 2
+    memory: 512m
+    serviceAccount: {{ .Values.serviceAccountName | quote }}
+    labels:
+      taskName: {{ .Release.Name }}
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8090"
+      prometheus.io/path: "/metrics"
+    env:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: {{ .Values.minioCredentialsSecret | quote }}
+            key: MINIO_ROOT_USER
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: {{ .Values.minioCredentialsSecret | quote }}
+            key: MINIO_ROOT_PASSWORD
+  executor:
+    instances: {{ .Values.sparkExecutorInstances }}
+    # deleteOnTermination: false
+    cores: 1
+    memory: 512m
+    serviceAccount: {{ .Values.serviceAccountName | quote }}
+    labels:
+      taskName: {{ .Release.Name }}
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8090"
+      prometheus.io/path: "/metrics"
+    env:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: {{ .Values.minioCredentialsSecret | quote }}
+            key: MINIO_ROOT_USER
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: {{ .Values.minioCredentialsSecret | quote }}
+            key: MINIO_ROOT_PASSWORD
+
+  monitoring:
+    exposeDriverMetrics: true
+    exposeExecutorMetrics: true
+    prometheus:
+      jmxExporterJar: /prometheus/jmx_prometheus_javaagent-0.11.0.jar
+      port: 8090
+{{ end -}}

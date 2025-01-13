@@ -17,7 +17,7 @@ prometheus:
     # -- Specifies whether to enable prometheus metrics scraping.
     enable: true
     # -- Metrics port.
-    port: 8080
+    port: 8090
     # -- Metrics port name.
     portName: metrics
     # -- Metrics serving endpoint.

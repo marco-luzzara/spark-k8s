@@ -36,10 +36,11 @@ uninstall:
 - HELM_VALUES_FILES: space-separated file path of values.yml files to use with `helm install` commands \
 - DRY_RUN=true: enable dry run \
 - NAMESPACE: namespace where kube resources are created \
-- CREATE_NS: create namespace if does not exist yet \
-- SPARK_TASK: name of the spark task to run
+- SPARK_TASK: name of the spark task to run \
+- USE_SPARK_SUBMIT: if true, deploy using spark-submit. otherwise deploy using SparkApplication custom resource
 run-spark-task:
-	helm upgrade --install ${DRY_RUN_INSTALL_OPTIONS} ${HELM_VALUES_FILES_OPTIONS} spark-task-${SPARK_TASK} ./spark-tasks --namespace="${NAMESPACE}" ${CREATE_NS_OPTION}
+	helm upgrade --install ${DRY_RUN_INSTALL_OPTIONS} ${HELM_VALUES_FILES_OPTIONS} spark-task-${SPARK_TASK} ./run-spark-task \
+		--namespace="${NAMESPACE}" --set doRunWithSparkSubmit=${USE_SPARK_SUBMIT}
 
 
 # Parameters \
