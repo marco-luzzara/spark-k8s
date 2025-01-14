@@ -4,6 +4,10 @@ custom-value-serviceAccount: &serviceAccount
     name: {{ .Release.Name }}-service-account
     create: false
 
+env:
+  - name: AIRFLOW__CORE__TEST_CONNECTION
+    value: Enabled
+
 images:
   airflow:
     repository: maluz/custom-airflow-k8s

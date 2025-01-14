@@ -32,40 +32,55 @@ Recipes for the Docker-compose deployment:
 
 ### ⚠️⚠️Important⚠️⚠️: Do not publish the Helm package <sup>[1]</sup>
 
-The deployment includes an optional minio instance necessary to save input/output of Spark tasks. With `make`:
+The deployment includes an optional minio instance necessary to save input/output of Spark tasks. If Minio has not been seeded, first run:
 
-(Shared with the local configuration)
+```bash
+make seed-minio MINIO_ENDPOINT=...
+```
 
-- `seed-minio`: seed minio with the dataset, spark jar and pod template.
+Then all the other `make` recipees are placed in `k8s/Makefile`. Before running them, you can create a custom Makefile that is executed before
+the main one and can contain various configurations like k8s namespace, helm release name, etc. Its path can be specified using the variable `MAKE_CFG_PATH`. If empty, then:
+1. Make firstly retrieves the current K8s `CONTEXT_NAME` (`kubectl config current-context`)
+2. `-include` the Makefile in `k8s/makefile-includes/$CONTEXT_NAME`
 
-(For the following ones, change Makefile and `cd k8s`)
+Here are some examples of `make` commands:
 
 - `install`: create all the k8s resources for spark. **Note**: if minio needs to be installed, before running a task make sure to run the `seed-minio` recipe.Example:
     ```bash
-    make install HELM_VALUES_FILES="./pipeline-demo/local-env-values.yaml" NAMESPACE="spark-k8s" DRY_RUN=true
+    make install HELM_VALUES_FILES="./pipeline-demo/local-env-values.yaml" DRY_RUN=true
     ```
-- `uninstall`: uninstall the k8s resources for the pipeline, including Spark, Minio (if present) and Airflow
+- `uninstall`: uninstall the k8s resources for the pipeline
     ```bash
-    make uninstall NAMESPACE="spark-k8s"
+    make uninstall
     ```
 - `run-spark-task`: run a Job for the specified Spark task. Example:
     ```bash
     make run-spark-task HELM_VALUES_FILES="./spark-tasks/base-values.yaml ./spark-tasks/local-env-values.yaml ./spark-tasks/task-values/local-sample.yaml" \
-        NAMESPACE="spark-k8s" SPARK_TASK="sample" DRY_RUN=true
+        SPARK_TASK="sample" DRY_RUN=true
     ```
 - `delete-task`: remove a task and garbage collect the driver pods. Example:
     ```bash
-    make delete-task NAMESPACE="spark-k8s" SPARK_TASK="sample"
+    make delete-task SPARK_TASK="sample"
     ```
 
-- `setup-airflow`: Create the in-cluster connection for the kubernetes operator for Airflow
+- `add-in-cluster-conn-airflow`: Create the in-cluster connection for the kubernetes operator for Airflow
     ```bash
-    make setup-airflow WORKER_POD_NAME="pipeline-demo-airflow-worker-0"
+    make add-in-cluster-conn-airflow
     ```
 
-- `generate-kube-config`: Generate kube config for kubernetes operator for Airflow. The returned kube config must be manually installed.
+- `generate-kube-config`: Generate kube config of current context for Airflow kubernetes operator. The returned kube config must be manually installed.
     ```bash
-    make generate-kube-config TOKEN_SECRET="pipeline-demo-service-account-token-secret" K8S_ENDPOINT="https://localhost:6443"
+    make generate-kube-config
+    ```
+
+- `airflow-ui`: port-forward the airflow pod ui port on localhost
+    ```bash
+    make airflow-ui
+    ```
+
+- `prometheus-ui`: port-forward the prometheus pod ui port on localhost
+    ```bash
+    make prometheus-ui
     ```
 
 ---

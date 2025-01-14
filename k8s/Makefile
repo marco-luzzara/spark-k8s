@@ -1,9 +1,10 @@
-SHELL = /bin/bash
+SHELL := /bin/bash
 
 DRY_RUN_INSTALL_OPTIONS := $(if $(DRY_RUN),--debug --dry-run,)
 HELM_VALUES_FILES_OPTIONS := $(foreach file,$(HELM_VALUES_FILES),--values $(file))
 CREATE_NS_OPTION := $(if $(CREATE_NS),--create-namespace,)
-MAKE_CFG_PATH ?= makefile-includes/default.mk
+KUBE_CONTEXT := $(shell kubectl config current-context)
+MAKE_CFG_PATH ?= makefile-includes/${KUBE_CONTEXT}.mk
 
 -include ${MAKE_CFG_PATH}
 
@@ -16,15 +17,52 @@ MAKE_CFG_PATH ?= makefile-includes/default.mk
 - CREATE_NS: create namespace if does not exist yet
 install:
 	helm upgrade --install --wait ${DRY_RUN_INSTALL_OPTIONS} ${HELM_VALUES_FILES_OPTIONS} pipeline-demo ./pipeline-demo --namespace="${NAMESPACE}" ${CREATE_NS_OPTION}
+	
+
+# Parameters \
+- NAMESPACE: namespace where kube resources are created \
+- RELEASE_NAME: helm release name
+install-airflow:
+	helm repo add apache-airflow https://airflow.apache.org
+	helm repo update apache-airflow
+	helm upgrade --install ${RELEASE_NAME}-airflow apache-airflow/airflow \
+		--namespace ${NAMESPACE} \
+		--values <(kubectl get configmap ${RELEASE_NAME}-airflow-configmap -o=jsonpath='{.data.override-values\.yaml}')
 
 
 # Parameters \
-- NAMESPACE: namespace where kube resources have been created
+- NAMESPACE: namespace where kube resources are created \
+- RELEASE_NAME: helm release name
+install-prometheus:
+	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+	helm repo update prometheus-community
+
+	helm upgrade --install ${RELEASE_NAME}-prometheus-stack prometheus-community/kube-prometheus-stack \
+		--namespace ${NAMESPACE} \
+		--values <(kubectl get configmap ${RELEASE_NAME}-prometheus-configmap -o=jsonpath='{.data.override-values\.yaml}')
+		
+
+# Parameters \
+- NAMESPACE: namespace where kube resources are created \
+- RELEASE_NAME: helm release name
+install-spark-operator:
+	helm repo add spark-operator https://kubeflow.github.io/spark-operator
+	helm repo update spark-operator
+
+	helm upgrade --install ${RELEASE_NAME}-spark-operator spark-operator/spark-operator \
+		--namespace ${NAMESPACE} \
+		--values <(kubectl get configmap ${RELEASE_NAME}-spark-operator-configmap -o=jsonpath='{.data.override-values\.yaml}')
+
+
+# Parameters \
+- NAMESPACE: namespace where kube resources have been created \
+- RELEASE_NAME: helm release name
 uninstall:
-	helm uninstall --wait pipeline-demo --namespace="${NAMESPACE}" || echo "No pipeline-demo release found"
-	helm uninstall --wait pipeline-demo-airflow --namespace="${NAMESPACE}" || echo "No airflow release found"
-	helm uninstall --wait pipeline-demo-spark-operator --namespace="${NAMESPACE}" || echo "No spark operator release found"
-	kubectl delete all,configmap,secret -l app.kubernetes.io/name=pipeline-demo
+	helm uninstall --wait ${RELEASE_NAME} --namespace="${NAMESPACE}" || echo "No ${RELEASE_NAME} release found"
+	helm uninstall --wait ${RELEASE_NAME}-airflow --namespace="${NAMESPACE}" || echo "No airflow release found"
+	helm uninstall --wait ${RELEASE_NAME}-spark-operator --namespace="${NAMESPACE}" || echo "No spark operator release found"
+	helm uninstall --wait ${RELEASE_NAME}-prometheus --namespace="${NAMESPACE}" || echo "No prometheus release found"
+	kubectl delete all,configmap,secret -l app.kubernetes.io/name=${RELEASE_NAME}
 
 
 # Parameters \
@@ -72,13 +110,13 @@ add-in-cluster-conn-airflow:
 - CONNECTION_JSON: json description of the connection (to generate using `generate-kube-config`) \
 - CONNECTION_DESCRIPTION: description of the kube connection
 add-external-conn-airflow:
-	ESCAPED_CONNECTION_JSON=$$(echo -n '${CONNECTION_JSON}' | sed 's/\"/\\\\\\"/g')
+	ESCAPED_CONNECTION_JSON=$$(echo -n '${CONNECTION_JSON}' | sed 's/\"/\\"/g') && \
 	kubectl exec -it ${AIRFLOW_POD_NAME} -- airflow connections add --conn-json "\
 		{ \
 			\"description\": \"${CONNECTION_DESCRIPTION}\", \
 			\"conn_type\": \"kubernetes\", \
 			\"extra\": { \
-				\"kube_config\": \"${ESCAPED_CONNECTION_JSON}\" \
+				\"kube_config\": \"$$ESCAPED_CONNECTION_JSON\" \
 			} \
 		}" \
 		${CONNECTION_NAME}

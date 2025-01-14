@@ -51,15 +51,11 @@ seed-minio:
 	docker run --rm --network=host \
 		--entrypoint="bash" \
 		-v "./datasets:/datasets" \
-		-v "./k8s/spark-pod-template.yml:/pod-templates/spark-pod-template.yml" \
 		-v "./spark/example-job/target/example-job-1.0.0-jar-with-dependencies.jar:/jobs/sparksample.jar" \
 		minio/mc -c "\
 			mc alias set local_minio ${MINIO_ENDPOINT} $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD && \
-			mc rb --force local_minio/datasets local_minio/pod-templates local_minio/jobs local_minio/output && \
-			mc mb local_minio/datasets && \
-			mc mb local_minio/pod-templates && \
-			mc mb local_minio/jobs && \
-			mc mb local_minio/output && \
-			mc put /datasets/d1.csv local_minio/datasets && \
-			mc put /pod-templates/spark-pod-template.yml local_minio/pod-templates && \
-			mc put /jobs/sparksample.jar local_minio/jobs"
+			mc mb --ignore-existing local_minio/datasets && \
+			mc mb --ignore-existing local_minio/jobs && \
+			mc mb --ignore-existing local_minio/output && \
+			mc put --if-not-exists /datasets/d1.csv local_minio/datasets && \
+			mc put --if-not-exists /jobs/sparksample.jar local_minio/jobs"
