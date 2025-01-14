@@ -5,12 +5,77 @@ image:
   pullSecrets:
     - name: {{ .Release.Name }}-registry-secret
 
+# TODO: the spark operator webhook component fails with: 
+# Failed to sync webhook secret	{"error": "secrets \"pipeline-demo-spark-operator-webhook-certs\" is forbidden: User \"system:serviceaccount:ml-pipeline-musa:pipeline-demo-spark-operator-webhook\" cannot get resource \"secrets\" in API group \"\" in the namespace \"ml-pipeline-musa\""}
+# spark:
+#   # -- List of namespaces where to run spark jobs.
+#   # If empty string is included, all namespaces will be allowed.
+#   # Make sure the namespaces have already existed.
+#   jobNamespaces:
+#     - {{ .Release.NameSpace }}
+
+controller:
+  # -- Configure the verbosity of logging, can be one of `debug`, `info`, `error`.
+  logLevel: info
+
+  serviceAccount:
+    # -- Specifies whether to create a service account for the controller.
+    create: false
+    # -- Optional name for the controller service account.
+    name: {{ .Release.Name }}-service-account
+    # -- Extra annotations for the controller service account.
+    annotations: {}
+    # -- Auto-mount service account token to the controller pods.
+    automountServiceAccountToken: true
+
+  rbac:
+    # -- Specifies whether to create RBAC resources for the controller.
+    create: false
+    # -- Extra annotations for the controller RBAC resources.
+    annotations: {}
+
+webhook:
+  # -- Configure the verbosity of logging, can be one of `debug`, `info`, `error`.
+  logLevel: info
+
+  serviceAccount:
+    # -- Specifies whether to create a service account for the webhook.
+    create: false
+    # -- Optional name for the webhook service account.
+    name: {{ .Release.Name }}-service-account
+    # -- Extra annotations for the webhook service account.
+    annotations: {}
+    # -- Auto-mount service account token to the webhook pods.
+    automountServiceAccountToken: true
+
+  rbac:
+    # -- Specifies whether to create RBAC resources for the webhook.
+    create: false
+    # -- Extra annotations for the webhook RBAC resources.
+    annotations: {}
+
 spark:
   # -- List of namespaces where to run spark jobs.
   # If empty string is included, all namespaces will be allowed.
   # Make sure the namespaces have already existed.
   jobNamespaces:
-    - {{ .Release.NameSpace }}
+    - ""
+
+  serviceAccount:
+    # -- Specifies whether to create a service account for spark applications.
+    create: false
+    # -- Optional name for the spark service account.
+    name: {{ .Release.Name }}-service-account
+    # -- Optional annotations for the spark service account.
+    annotations: {}
+    # -- Auto-mount service account token to the spark applications pods.
+    automountServiceAccountToken: true
+
+  rbac:
+    # -- Specifies whether to create RBAC resources for spark applications.
+    create: false
+    # -- Optional annotations for the spark application RBAC resources.
+    annotations: {}
 
 prometheus:
   metrics:

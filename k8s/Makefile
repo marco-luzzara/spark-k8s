@@ -1,16 +1,11 @@
 SHELL = /bin/bash
 
-# Parameters
-# - HELM_VALUES_FILES: space-separated file path of values.yml files to use with `helm install` commands
-# - DRY_RUN=true: enable dry run
-# - NAMESPACE: namespace where kube resources are created
-# - CREATE_NS: create namespace if does not exist yet
-# - SPARK_TASK: name of the spark task to run
-
 DRY_RUN_INSTALL_OPTIONS := $(if $(DRY_RUN),--debug --dry-run,)
 HELM_VALUES_FILES_OPTIONS := $(foreach file,$(HELM_VALUES_FILES),--values $(file))
 CREATE_NS_OPTION := $(if $(CREATE_NS),--create-namespace,)
+MAKE_CFG_PATH ?= makefile-includes/default.mk
 
+-include ${MAKE_CFG_PATH}
 
 .PHONY: install uninstall run-spark-task delete-task build-airflow-image setup-airflow
 
@@ -37,7 +32,8 @@ uninstall:
 - DRY_RUN=true: enable dry run \
 - NAMESPACE: namespace where kube resources are created \
 - SPARK_TASK: name of the spark task to run \
-- USE_SPARK_SUBMIT: if true, deploy using spark-submit. otherwise deploy using SparkApplication custom resource
+- USE_SPARK_SUBMIT: if true, deploy using spark-submit. otherwise deploy using SparkApplication custom resource (default: false)
+USE_SPARK_SUBMIT ?= false
 run-spark-task:
 	helm upgrade --install ${DRY_RUN_INSTALL_OPTIONS} ${HELM_VALUES_FILES_OPTIONS} spark-task-${SPARK_TASK} ./run-spark-task \
 		--namespace="${NAMESPACE}" --set doRunWithSparkSubmit=${USE_SPARK_SUBMIT}
@@ -58,9 +54,9 @@ build-airflow-image:
 
 
 # Parameters \
-- WORKER_POD_NAME: airflow worker pod name
+- AIRFLOW_POD_NAME: airflow worker pod name
 add-in-cluster-conn-airflow:
-	kubectl exec -it ${WORKER_POD_NAME} -- airflow connections add --conn-json "\
+	kubectl exec -it ${AIRFLOW_POD_NAME} -- airflow connections add --conn-json "\
 		{ \
 			\"description\": \"K8S connections for deploying pods in the same cluster\", \
 			\"conn_type\": \"kubernetes\", \
@@ -71,14 +67,15 @@ add-in-cluster-conn-airflow:
 		in_cluster_connection
 
 # Parameters \
-- WORKER_POD_NAME: airflow worker pod name \
+- AIRFLOW_POD_NAME: airflow worker pod name \
 - CONNECTION_NAME: name of the airflow connection \
-- CONNECTION_JSON: json description of the connection (to generate using `generate-kube-config`)
+- CONNECTION_JSON: json description of the connection (to generate using `generate-kube-config`) \
+- CONNECTION_DESCRIPTION: description of the kube connection
 add-external-conn-airflow:
 	ESCAPED_CONNECTION_JSON=$$(echo -n '${CONNECTION_JSON}' | sed 's/\"/\\\\\\"/g')
-	kubectl exec -it ${WORKER_POD_NAME} -- airflow connections add --conn-json "\
+	kubectl exec -it ${AIRFLOW_POD_NAME} -- airflow connections add --conn-json "\
 		{ \
-			\"description\": \"K8S connections for deploying pods in an external cluster\", \
+			\"description\": \"${CONNECTION_DESCRIPTION}\", \
 			\"conn_type\": \"kubernetes\", \
 			\"extra\": { \
 				\"kube_config\": \"${ESCAPED_CONNECTION_JSON}\" \
@@ -88,28 +85,29 @@ add-external-conn-airflow:
 
 
 # Parameters \
-- TOKEN_SECRET: name of the k8s secret containing the service-account token \
-- K8S_ENDPOINT: k8s endpoint (e.g. https://localhost:6443)
+- TOKEN_SECRET: name of the k8s secret containing the service-account token 
 generate-kube-config:
 	TOKEN="$$(kubectl get secret/${TOKEN_SECRET} -o=jsonpath="{ .data.token }" | base64 -d)" && \
-	CA=$$(kubectl get secret/${TOKEN_SECRET} -o jsonpath="{ .data.ca\.crt }") && \
-	NAMESPACE=$$(kubectl get secret/${TOKEN_SECRET} -o jsonpath="{ .data.namespace }" | base64 -d) && \
+	CA="$$(kubectl get secret/${TOKEN_SECRET} -o jsonpath="{ .data.ca\.crt }")" && \
+	NAMESPACE="$$(kubectl get secret/${TOKEN_SECRET} -o jsonpath="{ .data.namespace }" | base64 -d)" && \
+	K8S_ENDPOINT="$$(kubectl config view --minify --output jsonpath="{.clusters[*].cluster.server}")" && \
+	CONTEXT_NAME="$$(kubectl config view --minify --output jsonpath="{.contexts[0].name}")" && \
 	echo "{ \
 		\"kind\": \"Config\", \
 		\"apiVersion\": \"v1\", \
 		\"preferences\": {}, \
 		\"clusters\": [ \
 			{ \
-				\"name\": \"service-account-cluster\", \
+				\"name\": \"$$CONTEXT_NAME-cluster\", \
 				\"cluster\": { \
-					\"server\": \"${K8S_ENDPOINT}\", \
+					\"server\": \"$$K8S_ENDPOINT\", \
 					\"certificate-authority-data\": \"$$CA\" \
 				} \
 			} \
 		], \
 		\"users\": [ \
 			{ \
-				\"name\": \"service-account\", \
+				\"name\": \"$$CONTEXT_NAME-user\", \
 				\"user\": { \
 					\"token\": \"$$TOKEN\" \
 				} \
@@ -117,15 +115,15 @@ generate-kube-config:
 		], \
 		\"contexts\": [ \
 			{ \
-				\"name\": \"service-account-context\", \
+				\"name\": \"$$CONTEXT_NAME-context\", \
 				\"context\": { \
-					\"cluster\": \"service-account-cluster\", \
-					\"user\": \"service-account\", \
+					\"cluster\": \"$$CONTEXT_NAME-cluster\", \
+					\"user\": \"$$CONTEXT_NAME-user\", \
 					\"namespace\": \"$$NAMESPACE\" \
 				} \
 			} \
 		], \
-		\"current-context\": \"service-account-context\" \
+		\"current-context\": \"$$CONTEXT_NAME-context\" \
 	}" | sed 's/	//g'
 
 
@@ -134,3 +132,9 @@ generate-kube-config:
 - RELEASE_NAME: helm release name
 airflow-ui:
 	kubectl port-forward svc/${RELEASE_NAME}-airflow-webserver 8080:8080 --namespace ${NAMESPACE}
+
+
+# Parameters \
+- NAMESPACE: namespace 
+prometheus-ui:
+	kubectl port-forward svc/prometheus-operated 9090:9090 --namespace ${NAMESPACE}
