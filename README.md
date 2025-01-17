@@ -2,29 +2,42 @@
 
 ## Local with DockerCompose
 
-Set the env variables in `.env`:
+Create a `makefile-includes` directory containing the `Makefile`s with the variables specific to the environment, for example:
 
-### Configs
+```makefile
+# local.mk
 
-```ini
-MINIO_ROOT_USER=miniouser
-MINIO_ROOT_PASSWORD=miniopassword
+# Minio
+MINIO_ENDPOINT := localhost
+MINIO_ROOT_USER := miniouser
+MINIO_ROOT_PASSWORD := miniopassword
+MINIO_UI_PORT := 9001
 
-# EXPOSED PORTS
-MINIO_UI_PORT=9001
-SPARK_MASTER_UI_PORT=8081
-SPARK_WORKER_UI_PORT=8082
+# Spark
+SPARK_MASTER_UI_PORT := 8081
+SPARK_WORKER_UI_PORT := 8082
 ```
+
+Any `prod.*.mk` file in this folder is excluded from git. Then run `make up` to run the `docker compose up`.
 
 Configure the Spark master/worker in `spark-docker/spark-defaults.conf`.
 
-### Make
+## Make
 
-Recipes for the Docker-compose deployment:
-- `up`: `docker compose up -d`. **Note**: Make sure to run `make create-jar` to create the fat jar that will end up inside the custom docker image.
+There are 2 `Makefiles`:
+- one for generic recipees (in the root folder) 
+- one for Kubernetes-specific recipees (in `k8s` folder)
+
+As for the first one, **make sure to assign the `MAKE_CFG_PATH` variable** to the path of the `Makefile` containing the variables (defaults to `makefile-includes/local.mk`).
+The generic `Makefile` recipees are:
+
+- `up`: `docker compose up -d`. **Note**: run `make create-extra-deps-jar` first
 - `down`: `docker compose down`
 - `submit-job`: Submit a Spark job
-- `create-jar`: Create the uber jar for the Spark job
+- `create-extra-deps-jar`: create the fat jar that will end up inside the custom docker image for spark
+- `create-task-jar`: Create the uber jar for each Spark job
+- `build-spark-image`: create a custom Docker image for Spark
+- `upload-to-minio`: upload a file to the minio instance
 
 ---
 
@@ -55,7 +68,8 @@ Here are some examples of `make` commands:
     ```
 - `run-spark-task`: run a Job for the specified Spark task. Example:
     ```bash
-    make run-spark-task HELM_VALUES_FILES="./spark-tasks/base-values.yaml ./spark-tasks/local-env-values.yaml ./spark-tasks/task-values/local-sample.yaml" \
+    make run-spark-task \
+        HELM_VALUES_FILES="./run-spark-task/base-values.yaml ./run-spark-task/local-env-values.yaml ./run-spark-task/task-values/local-sample.yaml" \
         SPARK_TASK="sample" DRY_RUN=true
     ```
 - `delete-task`: remove a task and garbage collect the driver pods. Example:

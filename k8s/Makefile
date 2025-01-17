@@ -79,7 +79,7 @@ run-spark-task:
 
 # Parameters \
 - SPARK_TASK: name of the spark task to run
-delete-task:
+delete-spark-task:
 	helm uninstall spark-task-${SPARK_TASK}
 	# garbage collect the driver pod
 	kubectl delete pod --selector="createdByServiceAccount=true"

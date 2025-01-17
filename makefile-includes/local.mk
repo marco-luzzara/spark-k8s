@@ -1,0 +1,9 @@
+# Minio
+MINIO_ENDPOINT := localhost
+MINIO_ROOT_USER := miniouser
+MINIO_ROOT_PASSWORD := miniopassword
+MINIO_UI_PORT := 9001
+
+# Spark
+SPARK_MASTER_UI_PORT := 8081
+SPARK_WORKER_UI_PORT := 8082

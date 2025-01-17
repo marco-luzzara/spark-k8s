@@ -20,3 +20,6 @@ doInstallAirflowInHook: true
 
 # spark-operator
 doInstallSparkOperatorInHook: true
+
+# prometheus
+doInstallPrometheusInHook: true
