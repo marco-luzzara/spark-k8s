@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: spark-podmonitor
+  labels:
+    app.kubernetes.io/name: prometheus-podmonitor
+    app.kubernetes.io/instance: spark-podmonitor
+    app.kubernetes.io/part-of: prometheus
+    app.kubernetes.io/component: podmonitor
+spec:
+  jobLabel: spark-app-selector
+  podTargetLabels:
+    - spark-app-name
+  podMetricsEndpoints:
+    - interval: 10s
+      portNumber: 8090
+      path: /metrics
+  selector:
+    matchLabels:
+      spark-role: "driver"

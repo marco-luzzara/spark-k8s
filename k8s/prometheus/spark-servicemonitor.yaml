@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: spark-servicemonitor
+  labels:
+    app.kubernetes.io/name: prometheus-servicemonitor
+    app.kubernetes.io/instance: spark-servicemonitor
+    app.kubernetes.io/part-of: prometheus
+    app.kubernetes.io/component: servicemonitor
+spec:
+  jobLabel: spark-app-selector
+  podTargetLabels:
+    - spark-app-name
+  endpoints:
+    - interval: 10s
+      port: spark-ui
+      path: /metrics/executors/prometheus
+  selector:
+    matchLabels:
+      isSparkDriverService: "true"

@@ -39,7 +39,9 @@ install-prometheus:
 
 	helm upgrade --install ${RELEASE_NAME}-prometheus-stack prometheus-community/kube-prometheus-stack \
 		--namespace ${NAMESPACE} \
-		--values <(kubectl get configmap ${RELEASE_NAME}-prometheus-configmap -o=jsonpath='{.data.override-values\.yaml}')
+		--values ./prometheus/values-override.yaml
+
+	kubectl apply -f prometheus/spark-podmonitor.yaml -f prometheus/spark-servicemonitor.yaml
 		
 
 # Parameters \
@@ -82,7 +84,7 @@ run-spark-task:
 delete-spark-task:
 	helm uninstall spark-task-${SPARK_TASK}
 	# garbage collect the driver pod
-	kubectl delete pod --selector="createdByServiceAccount=true"
+	kubectl delete pod --selector="isSparkPod=true"
 
 
 # Parameters \
@@ -174,5 +176,5 @@ airflow-ui:
 
 # Parameters \
 - NAMESPACE: namespace 
-prometheus-ui:
-	kubectl port-forward svc/prometheus-operated 9090:9090 --namespace ${NAMESPACE}
+grafana-ui:
+	kubectl port-forward svc/${RELEASE_NAME}-prometheus-stack-grafana 3000:80 --namespace ${NAMESPACE}
