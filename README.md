@@ -28,7 +28,7 @@ There are 2 `Makefiles`:
 - one for generic recipees (in the root folder) 
 - one for Kubernetes-specific recipees (in `k8s` folder)
 
-As for the first one, **make sure to assign the `MAKE_CFG_PATH` variable** to the path of the `Makefile` containing the variables (defaults to `makefile-includes/local.mk`).
+As for the first one, **some recipees require to assign the `MAKE_CFG_PATH` variable** to the path of the `Makefile` containing the variables (defaults to `makefile-includes/local.mk`).
 The generic `Makefile` recipees are:
 
 - `up`: `docker compose up -d`. **Note**: run `make create-extra-deps-jar` first
@@ -37,21 +37,16 @@ The generic `Makefile` recipees are:
 - `create-extra-deps-jar`: create the fat jar that will end up inside the custom docker image for spark
 - `create-task-jar`: Create the uber jar for each Spark job
 - `build-spark-image`: create a custom Docker image for Spark
-- `upload-to-minio`: upload a file to the minio instance
+- `upload-to-minio`: upload a file to the minio instance. Example:
+    ```bash
+    make upload-to-minio MAKE_CFG_PATH=makefile-includes/local.mk \
+        FILE_PATH="./external-deps/ml-tasks/code/example/target/example-1.0.0-jar-with-dependencies.jar" \
+        MINIO_PATH="default/jobs"
+    ```
 
 ---
 
-## K8S
-
-### ⚠️⚠️Important⚠️⚠️: Do not publish the Helm package <sup>[1]</sup>
-
-The deployment includes an optional minio instance necessary to save input/output of Spark tasks. If Minio has not been seeded, first run:
-
-```bash
-make seed-minio MINIO_ENDPOINT=...
-```
-
-Then all the other `make` recipees are placed in `k8s/Makefile`. Before running them, you can create a custom Makefile that is executed before
+For the K8s-specific recipees, see `k8s/Makefile`. Before running them, you can create a custom Makefile that is executed before
 the main one and can contain various configurations like k8s namespace, helm release name, etc. Its path can be specified using the variable `MAKE_CFG_PATH`. If empty, then:
 1. Make firstly retrieves the current K8s `CONTEXT_NAME` (`kubectl config current-context`)
 2. `-include` the Makefile in `k8s/makefile-includes/$CONTEXT_NAME`
@@ -96,6 +91,8 @@ Here are some examples of `make` commands:
     ```bash
     make prometheus-ui
     ```
+
+### ⚠️⚠️Important⚠️⚠️: Do not publish the Helm package <sup>[1]</sup>
 
 ---
 

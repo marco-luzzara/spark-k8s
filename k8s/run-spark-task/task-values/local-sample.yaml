@@ -1,5 +1,5 @@
 taskClass: it.unimi.SparkSample
 taskJarPath: s3a://jobs/sparksample.jar
 taskParameters:
-  - "s3a://datasets/d1.csv"
+  - "s3a://datasets/example.csv"
   - 's3a://output/spark-sample/{{ now | date "2006-01-02_15:04:05" }}'

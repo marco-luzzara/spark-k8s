@@ -48,11 +48,11 @@ services:
         mc mb local_minio/datasets
         mc mb local_minio/jobs
         mc mb local_minio/output
-        mc put /datasets/d1.csv local_minio/datasets
+        mc put /datasets/example.csv local_minio/datasets
         mc put /jobs/sparksample.jar local_minio/jobs
     volumes:
-      - "./datasets:/datasets"
-      - "./spark/example-job/target/example-job-1.0.0-jar-with-dependencies.jar:/jobs/sparksample.jar"
+      - "./external-deps/ml-tasks/datasets:/datasets"
+      - "./external-deps/ml-tasks/code/example/target/example-1.0.0-jar-with-dependencies.jar:/jobs/sparksample.jar"
 
   spark-master:
     <<: [*spark-image, *spark-env, *spark-volumes]

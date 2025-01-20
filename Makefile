@@ -30,12 +30,12 @@ submit-job:
 
 
 create-extra-deps-jar:
-	( cd spark && mvn install; ) && \
-	cp spark/extra-jars/target/extra-jars-1.0.0-jar-with-dependencies.jar spark-docker/
+	( cd external-deps/ml-tasks/code && mvn install -Pextra-only; ) && \
+	cp external-deps/ml-tasks/code/extra-jars/target/extra-jars-1.0.0-jar-with-dependencies.jar spark-docker/
 
 
 create-task-jar:
-	cd external-deps/ml-tasks/code && mvn package
+	cd external-deps/ml-tasks/code && mvn package -Ptasks
 
 
 # Parameters \
@@ -50,12 +50,12 @@ build-spark-image:
 - MINIO_PATH: path of the directory where the file will be uploaded in the minio filesystem
 upload-to-minio:
 	FILE_NAME=$$(basename "${FILE_PATH}") && \
-	BUCKET_NAME=$$(echo  "${MINIO_PATH}" | cut -d "/" -f1) && \
+	BUCKET_NAME=$$(echo "${MINIO_PATH}" | cut -d "/" -f1) && \
 	docker run --rm --network=host \
 		--entrypoint="bash" \
 		-v "${FILE_PATH}:/uploads/$$FILE_NAME" \
-		-v "./spark/example-job/target/example-job-1.0.0-jar-with-dependencies.jar:/jobs/sparksample.jar" \
 		minio/mc -c "\
 			mc alias set my_minio ${MINIO_ENDPOINT} ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} && \
-			mc mb --ignore-existing my_minio/${BUCKET_NAME} && \
-			mc put --if-not-exists /uploads/$$FILE_NAME my_minio/${MINIO_PATH}"
+			mc mb --ignore-existing my_minio/$$BUCKET_NAME && \
+			{ mc rm my_minio/${MINIO_PATH}/$$FILE_NAME || echo \"$$FILE_NAME is created for the first time now...\"; } && \
+			mc put /uploads/$$FILE_NAME my_minio/${MINIO_PATH}/$$FILE_NAME"
