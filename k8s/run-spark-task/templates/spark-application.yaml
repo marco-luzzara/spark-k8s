@@ -18,28 +18,22 @@ spec:
     {{- end }}
   # imagePullSecrets:
   #   - pipeline-demo-registry-secret
-  #timeToLiveSeconds: 120
   sparkConf:
     spark.hadoop.fs.s3a.aws.credentials.provider: "com.amazonaws.auth.EnvironmentVariableCredentialsProvider"
     spark.hadoop.fs.s3a.endpoint: {{ .Values.s3Endpoint | quote }}
     spark.hadoop.fs.s3a.path.style.access: "true"
     spark.hadoop.fs.s3a.connection.ssl.enabled: "false"
-    spark.driver.extraJavaOptions: "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED -javaagent:/prometheus/jmx_prometheus_javaagent-0.11.0.jar=8090:/prometheus/prometheus.yaml"
-    spark.executor.extraJavaOptions: "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED -javaagent:/prometheus/jmx_prometheus_javaagent-0.11.0.jar=8090:/prometheus/prometheus.yaml"
     spark.ui.prometheus.enabled: "true"
-    spark.metrics.conf: "/prometheus/metrics.properties"
+    spark.metrics.conf: "/etc/metrics/conf/metrics.properties"
     spark.metrics.namespace: {{ .Release.Name }}-{{ now | date "20060102-150405" }}
     spark.kubernetes.driver.service.label.isSparkDriverService: "true"
   driver:
     cores: 2
     memory: 512m
     serviceAccount: {{ .Values.serviceAccountName | quote }}
+    javaOptions: "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED -Dcustom.spark.driver.delaySecondsBeforeTermination=3600"
     labels:
       taskName: {{ .Release.Name }}
-    annotations:
-      prometheus.io/scrape: "true"
-      prometheus.io/port: "8090"
-      prometheus.io/path: "/metrics"
     env:
       - name: AWS_ACCESS_KEY_ID
         valueFrom:
@@ -57,12 +51,9 @@ spec:
     cores: 1
     memory: 512m
     serviceAccount: {{ .Values.serviceAccountName | quote }}
+    javaOptions: "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED -Dcustom.spark.driver.delaySecondsBeforeTermination=3600"
     labels:
       taskName: {{ .Release.Name }}
-    annotations:
-      prometheus.io/scrape: "true"
-      prometheus.io/port: "8090"
-      prometheus.io/path: "/metrics"
     env:
       - name: AWS_ACCESS_KEY_ID
         valueFrom:
