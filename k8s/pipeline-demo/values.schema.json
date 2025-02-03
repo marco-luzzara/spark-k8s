@@ -53,23 +53,23 @@
             "description": "base64-encoded secret for docker registry credentials. See https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#registry-secret-existing-credentials. **Node**: must be filled only when dockerRegistryRequired = true",
             "type": "string"
         },
-        "doInstallAirflowInHook": {
+        "doInstallAirflow": {
             "description": "Enable the installation of Airflow in a Helm hook",
             "type": "boolean"
         },
-        "doInstallSparkOperatorInHook": {
+        "doInstallSparkOperator": {
             "description": "Enable the installation of Spark Operator in a Helm hook",
             "type": "boolean"
         },
-        "doInstallPrometheusInHook": {
+        "doInstallPrometheus": {
             "description": "Enable the installation of Prometheus and the corresponding operator in a Helm hook",
             "type": "boolean"
         }
     },
     "required": [
-        "doInstallAirflowInHook",
-        "doInstallSparkOperatorInHook",
-        "doInstallPrometheusInHook"
+        "doInstallAirflow",
+        "doInstallSparkOperator",
+        "doInstallPrometheus"
     ],
     "title": "Values",
     "type": "object"

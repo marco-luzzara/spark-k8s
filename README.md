@@ -77,19 +77,28 @@ Here are some examples of `make` commands:
     make add-in-cluster-conn-airflow
     ```
 
-- `generate-kube-config`: Generate kube config of current context for Airflow kubernetes operator. The returned kube config must be manually installed.
-    ```bash
-    make generate-kube-config
-    ```
+- `generate-kube-config`: Generate kube config of current context for Airflow kubernetes operator. The returned kube config must be manually installed. Follow this steps:
+    1. Switch to the context that you want to connect from airflow: `kubectl config use-context my-context`
+    1. Generate kubeconfig and copy the resulting json string
+        ```bash
+        make generate-kube-config
+        ```
+    1. switch back to the old context where Airflow is deployed
+    1. open the airflow UI and add a new connection with the following fields:
+        - Id
+        - Connection type = Kubernetes Cluster connection
+        - Description (Optional)
+        - Kube config (JSON format) = the string copied from `make generate-kube-config`
+    1. Save the connection
 
-- `airflow-ui`: port-forward the airflow pod ui port on localhost
+- `airflow-ui`: port-forward the airflow pod ui port on localhost. **User**: `admin`, **Password**: `admin`
     ```bash
     make airflow-ui
     ```
 
-- `prometheus-ui`: port-forward the prometheus pod ui port on localhost
+- `grafana-ui`: port-forward the grafana pod ui port on localhost. **User**: `admin`, **Password**: `prom-operator`
     ```bash
-    make prometheus-ui
+    make grafana-ui
     ```
 
 ### ⚠️⚠️Important⚠️⚠️: Do not publish the Helm package <sup>[1]</sup>

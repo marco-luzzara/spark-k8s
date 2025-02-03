@@ -16,10 +16,10 @@ sparkTaskContainerImage:
   tag: "3.5.3-v2"
 
 # airflow
-doInstallAirflowInHook: true
+doInstallAirflow: true
 
 # spark-operator
-doInstallSparkOperatorInHook: true
+doInstallSparkOperator: true
 
 # prometheus
-doInstallPrometheusInHook: true
+doInstallPrometheus: true
