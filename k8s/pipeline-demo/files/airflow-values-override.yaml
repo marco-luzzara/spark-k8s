@@ -7,6 +7,8 @@ custom-value-serviceAccount: &serviceAccount
 env:
   - name: AIRFLOW__CORE__TEST_CONNECTION
     value: Enabled
+  - name: AIRFLOW__LOGGING__LOGGING_LEVEL
+    value: DEBUG
 
 images:
   airflow:
