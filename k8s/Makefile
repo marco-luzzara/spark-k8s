@@ -8,7 +8,7 @@ MAKE_CFG_PATH ?= makefile-includes/${KUBE_CONTEXT}.mk
 
 -include ${MAKE_CFG_PATH}
 
-.PHONY: install uninstall run-spark-task delete-task build-airflow-image setup-airflow
+.PHONY: install uninstall run-spark-task delete-spark-task build-airflow-image setup-airflow
 
 # Parameters \
 - HELM_VALUES_FILES: space-separated file path of values.yml files to use with `helm install` commands \
@@ -41,7 +41,7 @@ install-prometheus:
 		--namespace ${NAMESPACE} \
 		--values ./prometheus/values-override.yaml
 
-	kubectl apply -f prometheus/spark-podmonitor.yaml -f prometheus/spark-servicemonitor.yaml
+	kubectl apply -f prometheus/spark-podmonitor.yaml -f prometheus/spark-servicemonitor.yaml -f prometheus/airflow-servicemonitor.yaml
 		
 
 # Parameters \

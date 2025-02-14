@@ -48,6 +48,7 @@ flower:
 
 statsd:
   <<: *serviceAccount
+  enabled: true
 
 pgbouncer:
   <<: *serviceAccount

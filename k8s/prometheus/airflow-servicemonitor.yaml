@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: airflow-servicemonitor
+  labels:
+    app.kubernetes.io/name: prometheus-servicemonitor
+    app.kubernetes.io/instance: airflow-servicemonitor
+    app.kubernetes.io/part-of: prometheus
+    app.kubernetes.io/component: servicemonitor
+spec:
+  jobLabel: tier
+  targetLabels:
+    - release
+  endpoints:
+    - interval: 10s
+      port: statsd-scrape
+      path: /metrics
+  selector:
+    matchLabels:
+      component: statsd
+      tier: airflow
