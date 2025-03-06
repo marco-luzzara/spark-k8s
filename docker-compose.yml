@@ -2,7 +2,7 @@ x-spark-image: &spark-image
   image: custom-spark
   build:
     context: spark-docker
-    dockerfile: ./Dockerfile
+    dockerfile: ./Dockerfile.java_spark
 
 
 x-spark-env: &spark-env
@@ -52,7 +52,7 @@ services:
         mc put /jobs/sparksample.jar local_minio/jobs
     volumes:
       - "./external-deps/ml-tasks/datasets:/datasets"
-      - "./external-deps/ml-tasks/code/example/target/example-1.0.0-jar-with-dependencies.jar:/jobs/sparksample.jar"
+      - "./external-deps/ml-tasks/java/example/target/example-1.0.0-jar-with-dependencies.jar:/jobs/sparksample.jar"
 
   spark-master:
     <<: [*spark-image, *spark-env, *spark-volumes]

@@ -1,0 +1,11 @@
+{{ if .Values.doInstallAlloy -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-alloy-configmap
+{{ $metaInfo := dict "PartOf" "alloy" "Component" "config" "Global" . -}}
+{{ include "pipelineDemo.commonMetadata" $metaInfo | indent 2 }}
+data:
+  override-values.yaml: |
+{{ .Files.Get "files/alloy-values-override.yaml" | indent 4 }}
+{{ end -}}

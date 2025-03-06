@@ -40,7 +40,7 @@ The generic `Makefile` recipees are:
 - `upload-to-minio`: upload a file to the minio instance. Example:
     ```bash
     make upload-to-minio MAKE_CFG_PATH=makefile-includes/local.mk \
-        FILE_PATH="./external-deps/ml-tasks/code/example/target/example-1.0.0-jar-with-dependencies.jar" \
+        FILE_PATH="./external-deps/ml-tasks/java/example/target/example-1.0.0-jar-with-dependencies.jar" \
         MINIO_PATH="default/jobs"
     ```
 

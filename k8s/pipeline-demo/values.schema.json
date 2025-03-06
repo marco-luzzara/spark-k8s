@@ -54,22 +54,42 @@
             "type": "string"
         },
         "doInstallAirflow": {
-            "description": "Enable the installation of Airflow in a Helm hook",
+            "description": "Enable the installation of Airflow",
             "type": "boolean"
         },
         "doInstallSparkOperator": {
-            "description": "Enable the installation of Spark Operator in a Helm hook",
+            "description": "Enable the installation of Spark Operator",
             "type": "boolean"
         },
         "doInstallPrometheus": {
-            "description": "Enable the installation of Prometheus and the corresponding operator in a Helm hook",
+            "description": "Enable the installation of Prometheus",
+            "type": "boolean"
+        },
+        "doInstallMimir": {
+            "description": "Enable the installation of Mimir",
+            "type": "boolean"
+        },
+        "doInstallLoki": {
+            "description": "Enable the installation of Loki and the corresponding operator in a Helm hook",
+            "type": "boolean"
+        },
+        "doInstallAlloy": {
+            "description": "Enable the installation of Alloy and the corresponding operator in a Helm hook",
+            "type": "boolean"
+        },
+        "doInstallGrafana": {
+            "description": "Enable the installation of Grafana and the corresponding operator in a Helm hook",
             "type": "boolean"
         }
     },
     "required": [
         "doInstallAirflow",
         "doInstallSparkOperator",
-        "doInstallPrometheus"
+        "doInstallPrometheus",
+        "doInstallMimir",
+        "doInstallLoki",
+        "doInstallAlloy",
+        "doInstallGrafana"
     ],
     "title": "Values",
     "type": "object"

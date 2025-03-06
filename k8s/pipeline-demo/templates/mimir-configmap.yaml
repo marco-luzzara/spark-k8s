@@ -1,0 +1,11 @@
+{{ if .Values.doInstallMimir -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-mimir-configmap
+{{ $metaInfo := dict "PartOf" "mimir" "Component" "config" "Global" . -}}
+{{ include "pipelineDemo.commonMetadata" $metaInfo | indent 2 }}
+data:
+  override-values.yaml: |
+{{ .Files.Get "files/mimir-values-override.yaml" | indent 4 }}
+{{ end -}}

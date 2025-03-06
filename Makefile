@@ -30,12 +30,12 @@ submit-job:
 
 
 create-extra-deps-jar:
-	( cd external-deps/ml-tasks/code && mvn install -Pextra-only; ) && \
-	cp external-deps/ml-tasks/code/extra-jars/target/extra-jars-1.0.0-jar-with-dependencies.jar spark-docker/
+	( cd external-deps/ml-tasks/java && mvn install -Pextra-only; ) && \
+	cp external-deps/ml-tasks/java/extra-jars/target/extra-jars-1.0.0-jar-with-dependencies.jar spark-docker/
 
 
 create-task-jar:
-	cd external-deps/ml-tasks/code && mvn package -Ptasks
+	cd external-deps/ml-tasks/java && mvn package -Ptasks
 
 
 # Parameters \

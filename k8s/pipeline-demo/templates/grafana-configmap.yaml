@@ -1,0 +1,11 @@
+{{ if .Values.doInstallGrafana -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-grafana-configmap
+{{ $metaInfo := dict "PartOf" "grafana" "Component" "config" "Global" . -}}
+{{ include "pipelineDemo.commonMetadata" $metaInfo | indent 2 }}
+data:
+  override-values.yaml: |
+{{ .Files.Get "files/grafana-values-override.yaml" | indent 4 }}
+{{ end -}}

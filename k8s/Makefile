@@ -6,6 +6,9 @@ CREATE_NS_OPTION := $(if $(CREATE_NS),--create-namespace,)
 KUBE_CONTEXT := $(shell kubectl config current-context)
 MAKE_CFG_PATH ?= makefile-includes/${KUBE_CONTEXT}.mk
 
+GRAFANA_HELM_REPO := https://grafana.github.io/helm-charts
+
+
 -include ${MAKE_CFG_PATH}
 
 .PHONY: install uninstall run-spark-task delete-spark-task build-airflow-image setup-airflow
@@ -30,6 +33,7 @@ install-airflow:
 		--values <(kubectl get configmap ${RELEASE_NAME}-airflow-configmap -o=jsonpath='{.data.override-values\.yaml}')
 
 
+# TODO: to remove for distributed monitoring
 # Parameters \
 - NAMESPACE: namespace where kube resources are created \
 - RELEASE_NAME: helm release name
@@ -54,6 +58,47 @@ install-spark-operator:
 	helm upgrade --install ${RELEASE_NAME}-spark-operator spark-operator/spark-operator \
 		--namespace ${NAMESPACE} \
 		--values <(kubectl get configmap ${RELEASE_NAME}-spark-operator-configmap -o=jsonpath='{.data.override-values\.yaml}')
+
+
+install-mimir:
+	helm repo add mimir ${GRAFANA_HELM_REPO}
+	helm repo update mimir
+
+	helm upgrade --install ${RELEASE_NAME}-mimir mimir/mimir-distributed \
+		--version "^5.6.0" \
+		--namespace ${NAMESPACE} \
+		--values <(kubectl get configmap ${RELEASE_NAME}-mimir-configmap -o=jsonpath='{.data.override-values\.yaml}')
+
+	
+
+install-loki:
+	helm repo add loki ${GRAFANA_HELM_REPO}
+	helm repo update loki
+	
+	helm upgrade --install ${RELEASE_NAME}-loki loki/loki-distributed \
+		--version "^0.80.0" \
+		--namespace ${NAMESPACE} \
+		--values <(kubectl get configmap ${RELEASE_NAME}-loki-configmap -o=jsonpath='{.data.override-values\.yaml}')
+
+
+install-alloy:
+	helm repo add alloy ${GRAFANA_HELM_REPO}
+	helm repo update alloy
+	
+	helm upgrade --install ${RELEASE_NAME}-alloy alloy/alloy \
+		--version "^0.11.0" \
+		--namespace ${NAMESPACE} \
+		--values <(kubectl get configmap ${RELEASE_NAME}-alloy-configmap -o=jsonpath='{.data.override-values\.yaml}')
+
+
+install-grafana:
+	helm repo add grafana ${GRAFANA_HELM_REPO}
+	helm repo update grafana
+	
+	helm upgrade --install ${RELEASE_NAME}-grafana grafana/grafana \
+		--version "^8.9.0" \
+		--namespace ${NAMESPACE} \
+		--values <(kubectl get configmap ${RELEASE_NAME}-grafana-configmap -o=jsonpath='{.data.override-values\.yaml}')
 
 
 # Parameters \

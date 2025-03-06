@@ -1,0 +1,282 @@
+crds:
+  # -- Whether to install CRDs for monitoring.
+  create: false
+
+## Various Alloy settings. For backwards compatibility with the grafana-agent
+## chart, this field may also be called "agent". Naming this field "agent" is
+## deprecated and will be removed in a future release.
+alloy:
+  configMap:
+    # -- Create a new ConfigMap for the config file.
+    create: true
+    # -- Content to assign to the new ConfigMap.  This is passed into `tpl` allowing for templating from values.
+    content: |
+      // Endpoints
+      prometheus.remote_write "default" {
+        endpoint {
+          url = "http://pipeline-demo-mimir-nginx/api/v1/push"
+        }
+      }
+      loki.write "default" {
+        endpoint {
+          url = "http://pipeline-demo-loki-loki-distributed-gateway:80/loki/api/v1/push"
+        }
+      }
+
+      // Self monitoring
+      /// Logs monitoring
+      logging {
+        level = "info"
+        format = "logfmt"
+        write_to = [ loki.write.default.receiver ]
+      }
+
+      // Discovery
+      discovery.kubernetes "nodes" {
+        role = "node"
+        selectors { role  = "node" }
+      }
+      discovery.kubernetes "pods" {
+        role = "pod"
+        selectors { role  = "pod" }
+      }
+      discovery.kubernetes "services" {
+        role = "service"
+        selectors { role  = "service" }
+      }
+      discovery.kubernetes "ingress" {
+        role = "ingress"
+        selectors { role  = "ingress" }
+      }
+      
+      // Metrics monitoring
+      /// From nodes
+      prometheus.scrape "nodes" {
+        targets    = discovery.kubernetes.nodes.targets
+        forward_to = [prometheus.remote_write.default.receiver]
+      }
+      /// From pods
+      prometheus.scrape "pods" {
+        targets    = discovery.kubernetes.pods.targets
+        forward_to = [prometheus.remote_write.default.receiver]
+      }
+      /// From services
+      prometheus.scrape "services" {
+        targets    = discovery.kubernetes.services.targets
+        forward_to = [prometheus.remote_write.default.receiver]
+      }
+      /// From ingresses
+      prometheus.scrape "ingress" {
+        targets    = discovery.kubernetes.ingress.targets
+        forward_to = [prometheus.remote_write.default.receiver]
+      }
+      /// From servicemonitors      
+      prometheus.operator.servicemonitors "servicemonitors" {
+        forward_to = [prometheus.remote_write.default.receiver]
+      }
+
+      /// From podmonitors      
+      prometheus.operator.podmonitors "podmonitors" {
+        forward_to = [prometheus.remote_write.default.receiver]
+      }
+
+      prometheus.exporter.unix "node_exporter" { }
+      prometheus.scrape "node_exporter" {
+        targets    = prometheus.exporter.unix.node_exporter.targets
+        forward_to = [prometheus.remote_write.default.receiver]
+      }
+
+      // local.file_match discovers files on the local filesystem using glob patterns and the doublestar library. It returns an array of file paths.
+      local.file_match "node_logs" {
+        path_targets = [{
+            // Monitor syslog to scrape node-logs
+            __path__  = "/var/log/syslog",
+            job       = "node/syslog",
+            node_name = sys.env("HOSTNAME"),
+            cluster   = "edge",
+        }]
+      }
+
+      // loki.source.file reads log entries from files and forwards them to other loki.* components.
+      // You can specify multiple loki.source.file components by giving them different labels.
+      loki.source.file "node_logs" {
+        targets    = local.file_match.node_logs.targets
+        forward_to = [loki.write.default.receiver]
+      }
+      
+      // discovery.relabel rewrites the label set of the input targets by applying one or more relabeling rules.
+      // If no rules are defined, then the input targets are exported as-is.
+      discovery.relabel "pod_logs" {
+        targets = discovery.kubernetes.pods.targets
+
+        // Label creation - "namespace" field from "__meta_kubernetes_namespace"
+        rule {
+          source_labels = ["__meta_kubernetes_namespace"]
+          action = "replace"
+          target_label = "namespace"
+        }
+
+        // Label creation - "pod" field from "__meta_kubernetes_pod_name"
+        rule {
+          source_labels = ["__meta_kubernetes_pod_name"]
+          action = "replace"
+          target_label = "pod"
+        }
+
+        // Label creation - "container" field from "__meta_kubernetes_pod_container_name"
+        rule {
+          source_labels = ["__meta_kubernetes_pod_container_name"]
+          action = "replace"
+          target_label = "container"
+        }
+
+        // Label creation -  "app" field from "__meta_kubernetes_pod_label_app_kubernetes_io_name"
+        rule {
+          source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+          action = "replace"
+          target_label = "app"
+        }
+
+        // Label creation -  "job" field from "__meta_kubernetes_namespace" and "__meta_kubernetes_pod_container_name"
+        // Concatenate values __meta_kubernetes_namespace/__meta_kubernetes_pod_container_name
+        rule {
+          source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_container_name"]
+          action = "replace"
+          target_label = "job"
+          separator = "/"
+          replacement = "$1"
+        }
+
+        // Label creation - "container" field from "__meta_kubernetes_pod_uid" and "__meta_kubernetes_pod_container_name"
+        // Concatenate values __meta_kubernetes_pod_uid/__meta_kubernetes_pod_container_name.log
+        rule {
+          source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+          action = "replace"
+          target_label = "__path__"
+          separator = "/"
+          replacement = "/var/log/pods/*$1/*.log"
+        }
+
+        // Label creation -  "container_runtime" field from "__meta_kubernetes_pod_container_id"
+        rule {
+          source_labels = ["__meta_kubernetes_pod_container_id"]
+          action = "replace"
+          target_label = "container_runtime"
+          regex = "^(\\S+):\\/\\/.+$"
+          replacement = "$1"
+        }
+      }
+
+      // loki.source.kubernetes tails logs from Kubernetes containers using the Kubernetes API.
+      loki.source.kubernetes "pod_logs" {
+        targets    = discovery.relabel.pod_logs.output
+        forward_to = [loki.process.pod_logs.receiver]
+      }
+
+      // loki.process receives log entries from other Loki components, applies one or more processing stages,
+      // and forwards the results to the list of receivers in the component's arguments.
+      loki.process "pod_logs" {
+        stage.static_labels {
+            values = {
+              cluster = "edge",
+            }
+        }
+
+        forward_to = [loki.write.default.receiver]
+      }
+
+      // loki.source.kubernetes_events tails events from the Kubernetes API and converts them
+      // into log lines to forward to other Loki components.
+      loki.source.kubernetes_events "cluster_events" {
+        job_name   = "integrations/kubernetes/eventhandler"
+        log_format = "logfmt"
+        forward_to = [
+          loki.process.cluster_events.receiver,
+        ]
+      }
+
+      // loki.process receives log entries from other loki components, applies one or more processing stages,
+      // and forwards the results to the list of receivers in the component's arguments.
+      loki.process "cluster_events" {
+        forward_to = [loki.write.default.receiver]
+
+        stage.static_labels {
+          values = {
+            cluster = "edge",
+          }
+        }
+
+        stage.labels {
+          values = {
+            kubernetes_cluster_events = "job",
+          }
+        }
+      }
+
+  # -- Enables sending Grafana Labs anonymous usage stats to help improve Grafana
+  # Alloy.
+  enableReporting: false
+  mounts:
+    # -- Mount /var/log from the host into the container for log collection.
+    varlog: true
+    # -- Mount /var/lib/docker/containers from the host into the container for log
+    # collection.
+    dockercontainers: true
+
+rbac:
+  # -- Whether to create RBAC resources for Alloy.
+  create: true
+
+controller:
+  # -- Type of controller to use for deploying Grafana Alloy in the cluster.
+  # Must be one of 'daemonset', 'deployment', or 'statefulset'.
+  type: "statefulset"
+
+  # -- Number of pods to deploy. Ignored when controller.type is 'daemonset'.
+  replicas: 1
+
+  # -- Whether to enable automatic deletion of stale PVCs due to a scale down operation, when controller.type is 'statefulset'.
+  enableStatefulSetAutoDeletePVC: false
+
+serviceMonitor:
+  enabled: true
+
+ingress:
+  # -- Enables ingress for Alloy (Faro port)
+  enabled: false
+  # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
+  # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
+  # ingressClassName: nginx
+  # Values can be templated
+  annotations:
+    {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  labels: {}
+  path: /
+  faroPort: 12347
+
+  # pathType is only for k8s >= 1.1=
+  pathType: Prefix
+
+  hosts:
+    - alloy.edge.musa.sesar.int
+  ## Extra paths to prepend to every host configuration. This is useful when working with annotation based services.
+  extraPaths: []
+  # - path: /*
+  #   backend:
+  #     serviceName: ssl-redirect
+  #     servicePort: use-annotation
+  ## Or for k8s > 1.19
+  # - path: /*
+  #   pathType: Prefix
+  #   backend:
+  #     service:
+  #       name: ssl-redirect
+  #       port:
+  #         name: use-annotation
+
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local

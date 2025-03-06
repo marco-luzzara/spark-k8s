@@ -1,0 +1,11 @@
+{{ if .Values.doInstallLoki -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-loki-configmap
+{{ $metaInfo := dict "PartOf" "loki" "Component" "config" "Global" . -}}
+{{ include "pipelineDemo.commonMetadata" $metaInfo | indent 2 }}
+data:
+  override-values.yaml: |
+{{ .Files.Get "files/loki-values-override.yaml" | indent 4 }}
+{{ end -}}

@@ -1,0 +1,87 @@
+# ServiceMonitor configuration
+serviceMonitor:
+  # -- If enabled, ServiceMonitor resources for Prometheus Operator are created
+  enabled: true
+
+ingester:
+  persistence:
+    # -- Enable creating PVCs which is required when using boltdb-shipper
+    enabled: true
+    # -- Use emptyDir with ramdisk for storage. **Please note that all data in ingester will be lost on pod restart**
+    inMemory: false
+    # -- List of the ingester PVCs
+    # @notationType -- list
+    claims:
+      - name: data
+        size: 20Gi
+        #   -- Storage class to be used.
+        #   If defined, storageClassName: <storageClass>.
+        #   If set to "-", storageClassName: "", which disables dynamic provisioning.
+        #   If empty or set to null, no storageClassName spec is
+        #   set, choosing the default provisioner (gp2 on AWS, standard on GKE, AWS, and OpenStack).
+        storageClass: null
+      # - name: wal
+      #   size: 150Gi
+
+querier:
+  persistence:
+    # -- Enable creating PVCs for the querier cache
+    enabled: true
+    # -- Size of persistent disk
+    size: 20Gi
+    # -- Storage class to be used.
+    # If defined, storageClassName: <storageClass>.
+    # If set to "-", storageClassName: "", which disables dynamic provisioning.
+    # If empty or set to null, no storageClassName spec is
+    # set, choosing the default provisioner (gp2 on AWS, standard on GKE, AWS, and OpenStack).
+    storageClass: null
+    # -- Annotations for querier PVCs
+    annotations: {}
+
+compactor:
+  persistence:
+    enabled: true
+
+# Configuration for the gateway
+gateway:
+  # -- Specifies whether the gateway should be enabled
+  enabled: true
+  # Gateway ingress configuration
+  ingress:
+    # -- Specifies whether an ingress for the gateway should be created
+    enabled: true
+    # -- Ingress Class Name. MAY be required for Kubernetes versions >= 1.18
+    # For example: `ingressClassName: nginx`
+    ingressClassName: traefik
+    # -- Annotations for the gateway ingress
+    # annotations:
+    #   nginx.ingress.kubernetes.io/proxy-body-size: 500m
+    #   nginx.ingress.kubernetes.io/ssl-redirect: "false" # TODO: disable for production
+    # -- Hosts configuration for the gateway ingress
+    hosts:
+      - host: loki.edge.musa.sesar.int
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: loki-gateway-tls
+        hosts:
+          - loki.edge.musa.sesar.int
+
+  # Basic auth configuration
+  basicAuth:
+    # -- Enables basic authentication for the gateway
+    enabled: false
+    # -- The basic auth username for the gateway
+    username: null
+    # -- The basic auth password for the gateway
+    password: null
+    # -- Uses the specified username and password to compute a htpasswd using Sprig's `htpasswd` function.
+    # The value is templated using `tpl`. Override this to use a custom htpasswd, e.g. in case the default causes
+    # high CPU load.
+    # @default -- See values.yaml
+    htpasswd: >-
+      {{ htpasswd (required "'gateway.basicAuth.username' is required" .Values.gateway.basicAuth.username) (required "'gateway.basicAuth.password' is required" .Values.gateway.basicAuth.password) }}
+    # -- Existing basic auth secret to use. Must contain '.htpasswd'
+    existingSecret: null
+  # Configures the readiness probe for the gateway
